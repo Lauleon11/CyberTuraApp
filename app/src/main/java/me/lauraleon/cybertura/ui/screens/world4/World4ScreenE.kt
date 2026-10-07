@@ -47,10 +47,10 @@ fun World4ScreenE(
     val bgBattleRes = remember(gender, costumeId) {
         val isMale = gender.equals("HOMBRE", ignoreCase = true) || gender.contains("HOMBRE", ignoreCase = true)
         val bgName = when (costumeId.lowercase()) {
-            "spider" -> if (isMale) "bg_spidergato" else "bg_spidergata"
-            "bat" -> if (isMale) "bg_batigato" else "bg_batigata"
-            "super" -> if (isMale) "bg_supergato" else "bg_supergata"
-            else -> if (isMale) "bg_spidergato" else "bg_spidergata"
+            "spider" -> if (isMale) "m4_e_spidergato" else "m4_e_spidergata"
+            "bat" -> if (isMale) "m4_e_batigato" else "m4_e_batigata"
+            "super" -> if (isMale) "m4_e_supergato" else "m4_e_supergata"
+            else -> if (isMale) "m4_e_spidergato" else "m4_e_spidergata"
         }
         val resId = context.resources.getIdentifier(bgName, "drawable", context.packageName)
         if (resId != 0) resId else R.drawable.bg

@@ -45,10 +45,10 @@ fun World5ScreenG(
     val bgBattleRes = remember(gender, costumeId) {
         val isMale = gender.equals("HOMBRE", ignoreCase = true) || gender.contains("HOMBRE", ignoreCase = true)
         val bgName = when (costumeId.lowercase()) {
-            "spider" -> if (isMale) "bg_spidergato" else "bg_spidergata"
-            "bat" -> if (isMale) "bg_batigato" else "bg_batigata"
-            "super" -> if (isMale) "bg_supergato" else "bg_supergata"
-            else -> if (isMale) "bg_spidergato" else "bg_spidergata"
+            "spider" -> if (isMale) "m5_g_spidergato" else "m5_g_spidergata"
+            "bat" -> if (isMale) "m5_g_batigato" else "m5_g_batigata"
+            "super" -> if (isMale) "m5_g_supergato" else "m5_g_supergata"
+            else -> if (isMale) "m5_g_spidergato" else "m5_g_spidergata"
         }
         val resId = context.resources.getIdentifier(bgName, "drawable", context.packageName)
         if (resId != 0) resId else R.drawable.bg

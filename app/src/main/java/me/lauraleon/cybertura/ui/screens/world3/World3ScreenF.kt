@@ -45,10 +45,10 @@ fun World3ScreenF(
     val bgBattleRes = remember(gender, costumeId) {
         val isMale = gender.equals("HOMBRE", ignoreCase = true) || gender.contains("HOMBRE", ignoreCase = true)
         val bgName = when (costumeId.lowercase()) {
-            "spider" -> if (isMale) "m1_e_spidergato" else "m1_e_spidergata"
-            "bat" -> if (isMale) "m1_e_batigato" else "m1_e_batigata"
-            "super" -> if (isMale) "m1_e_supergato" else "m1_e_supergata"
-            else -> if (isMale) "m1_e_spidergato" else "m1_e_spidergata"
+            "spider" -> if (isMale) "m3_f_spidergato" else "m3_f_spidergata"
+            "bat" -> if (isMale) "m3_f_batigato" else "m3_f_batigata"
+            "super" -> if (isMale) "m3_f_supergato" else "m3_f_supergata"
+            else -> if (isMale) "m3_f_spidergato" else "m3_f_spidergata"
         }
         val resId = context.resources.getIdentifier(bgName, "drawable", context.packageName)
         if (resId != 0) resId else R.drawable.bg

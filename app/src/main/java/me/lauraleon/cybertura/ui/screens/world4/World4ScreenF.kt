@@ -45,10 +45,10 @@ fun World4ScreenF(
     val bgBattleRes = remember(gender, costumeId) {
         val isMale = gender.equals("HOMBRE", ignoreCase = true) || gender.contains("HOMBRE", ignoreCase = true)
         val baseName = when (costumeId.lowercase()) {
-            "spider" -> if (isMale) "spidergato" else "spidergata"
-            "bat" -> if (isMale) "batigato" else "batigata"
-            "super" -> if (isMale) "supergato" else "supergata"
-            else -> if (isMale) "spidergato" else "spidergata"
+            "spider" -> if (isMale) "m4_f_spidergato" else "m4_f_spidergata"
+            "bat" -> if (isMale) "m4_f_batigato" else "m4_f_batigata"
+            "super" -> if (isMale) "m4_f_supergato" else "m4_f_supergata"
+            else -> if (isMale) "m4_f_spidergato" else "m4_f_spidergata"
         }
         val namesToTry = listOf("m1_e_$baseName", "bg_$baseName", baseName)
         var foundRes = 0
