@@ -8,6 +8,7 @@ data class PlayerProfileEntity(
     @PrimaryKey val id: Int = 1,
     val nickname: String,
     val age: Int,
-    val costumeId: Int,
-    val gender: Int
+    val costumeId: String,
+    val gender: String,
+    val hasPlayedIntroNarrative: Boolean = false
 )

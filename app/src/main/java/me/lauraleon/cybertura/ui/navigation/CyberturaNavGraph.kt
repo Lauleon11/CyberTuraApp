@@ -1,6 +1,14 @@
 package me.lauraleon.cybertura.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -14,16 +22,40 @@ import me.lauraleon.cybertura.ui.screens.world2.*
 import me.lauraleon.cybertura.ui.screens.world3.*
 import me.lauraleon.cybertura.ui.screens.world4.*
 import me.lauraleon.cybertura.ui.screens.world5.*
+import me.lauraleon.cybertura.ui.theme.CyberCyan
+import me.lauraleon.cybertura.ui.viewmodel.GameViewModel
 
 @Composable
-fun CyberturaNavGraph() {
+fun CyberturaNavGraph(
+    viewModel: GameViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
-    var userGender by remember { mutableStateOf("HOMBRE") }
-    var userCostumeId by remember { mutableStateOf("spider") }
-    var unlockedWorldMax by remember { mutableIntStateOf(1) }
-    var hasPlayedIntroNarrative by remember { mutableStateOf(false) }
+    val playerProfile by viewModel.playerProfile.collectAsState()
+    val unlockedWorldMax by viewModel.unlockedWorldMax.collectAsState()
 
-    NavHost(navController = navController, startDestination = Screen1) {
+    var isProfileLoaded by remember { mutableStateOf(false) }
+    LaunchedEffect(playerProfile) {
+        isProfileLoaded = true
+    }
+
+    if (!isProfileLoaded) {
+        Box(
+            modifier = Modifier.fillMaxSize().background(Color.Black),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = CyberCyan)
+        }
+        return
+    }
+
+    val hasProfile = playerProfile != null && playerProfile?.nickname.isNullOrBlank().not()
+    val startDestination = if (hasProfile) Screen3 else Screen1
+
+    val userGender = playerProfile?.gender ?: "HOMBRE"
+    val userCostumeId = playerProfile?.costumeId ?: "spider"
+    val hasPlayedIntroNarrative = playerProfile?.hasPlayedIntroNarrative ?: false
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable<Screen1> {
             Screen1 {
                 navController.navigate(Screen2)
@@ -31,10 +63,11 @@ fun CyberturaNavGraph() {
         }
         composable<Screen2> {
             Screen2(
-                onContinue = { _, _, gender, costumeId ->
-                    userGender = gender
-                    userCostumeId = costumeId
-                    navController.navigate(Screen3)
+                onContinue = { alias, age, gender, costumeId ->
+                    viewModel.savePlayer(alias, age, gender, costumeId)
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen1> { inclusive = true }
+                    }
                 },
             )
         }
@@ -42,7 +75,7 @@ fun CyberturaNavGraph() {
             Screen3(
                 unlockedWorldMax = unlockedWorldMax,
                 hasPlayedIntroNarrative = hasPlayedIntroNarrative,
-                onNarrativePlayed = { hasPlayedIntroNarrative = true },
+                onNarrativePlayed = { viewModel.setIntroNarrativePlayed(true) },
                 onWorldClick = { world ->
                     if (world.id <= unlockedWorldMax) {
                         when (world.id) {
@@ -122,10 +155,10 @@ fun CyberturaNavGraph() {
         composable<World1ScreenH> {
             World1ScreenH(
                 onWorld2Unlocked = {
-                    if (unlockedWorldMax < 2) {
-                        unlockedWorldMax = 2
+                    viewModel.completeWorld(1)
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen3> { inclusive = true }
                     }
-                    navController.navigate(Screen3)
                 }
             )
         }
@@ -184,10 +217,10 @@ fun CyberturaNavGraph() {
         composable<World2ScreenH> {
             World2ScreenH(
                 onWorld3Unlocked = {
-                    if (unlockedWorldMax < 3) {
-                        unlockedWorldMax = 3
+                    viewModel.completeWorld(2)
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen3> { inclusive = true }
                     }
-                    navController.navigate(Screen3)
                 }
             )
         }
@@ -246,10 +279,10 @@ fun CyberturaNavGraph() {
         composable<World3ScreenH> {
             World3ScreenH(
                 onWorld4Unlocked = {
-                    if (unlockedWorldMax < 4) {
-                        unlockedWorldMax = 4
+                    viewModel.completeWorld(3)
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen3> { inclusive = true }
                     }
-                    navController.navigate(Screen3)
                 }
             )
         }
@@ -308,10 +341,10 @@ fun CyberturaNavGraph() {
         composable<World4ScreenH> {
             World4ScreenH(
                 onWorld5Unlocked = {
-                    if (unlockedWorldMax < 5) {
-                        unlockedWorldMax = 5
+                    viewModel.completeWorld(4)
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen3> { inclusive = true }
                     }
-                    navController.navigate(Screen3)
                 }
             )
         }
@@ -370,10 +403,10 @@ fun CyberturaNavGraph() {
         composable<World5ScreenH> {
             World5ScreenH(
                 onHallOfBadges = {
-                    if (unlockedWorldMax < 5) {
-                        unlockedWorldMax = 5
+                    viewModel.completeWorld(5)
+                    navController.navigate(HallOfBadgesRoute) {
+                        popUpTo<Screen3> { inclusive = false }
                     }
-                    navController.navigate(HallOfBadgesRoute)
                 }
             )
         }

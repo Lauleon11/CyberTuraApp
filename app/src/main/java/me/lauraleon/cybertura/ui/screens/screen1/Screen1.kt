@@ -1,6 +1,7 @@
 package me.lauraleon.cybertura.ui.screens.screen1
 
 import android.net.Uri
+import android.view.ViewGroup
 import android.widget.VideoView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -42,13 +43,22 @@ fun Screen1(
         if (videoUri != null) {
             AndroidView(
                 factory = { ctx ->
-                    VideoView(ctx).apply {
+                    object : VideoView(ctx) {
+                        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+                            val width = MeasureSpec.getSize(widthMeasureSpec)
+                            val height = MeasureSpec.getSize(heightMeasureSpec)
+                            setMeasuredDimension(width, height)
+                        }
+                    }.apply {
                         setVideoURI(videoUri)
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
                         setOnPreparedListener { mp ->
-                            mp.isLooping = true
+                            mp.isLooping = false
                             mp.start()
                         }
-                        start()
                     }
                 },
                 modifier = Modifier.fillMaxSize()

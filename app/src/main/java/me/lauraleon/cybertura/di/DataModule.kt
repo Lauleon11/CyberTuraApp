@@ -23,7 +23,7 @@ object DataModule {
             context.applicationContext,
             CyberturaDatabase::class.java,
             CyberturaDatabase.NAME
-        ).build()
+        ).fallbackToDestructiveMigration(true).build()
 
     @Provides
     fun providePlayerDao(database: CyberturaDatabase): PlayerDao = database.playerDao()

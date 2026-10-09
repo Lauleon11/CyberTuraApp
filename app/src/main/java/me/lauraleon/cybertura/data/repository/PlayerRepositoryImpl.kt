@@ -27,7 +27,8 @@ private fun PlayerProfileEntity.toDomain() = PlayerProfile(
     nickname = nickname,
     age = age,
     costumeId = costumeId,
-    gender = gender
+    gender = gender,
+    hasPlayedIntroNarrative = hasPlayedIntroNarrative
 )
 
 private fun PlayerProfile.toEntity() = PlayerProfileEntity(
@@ -35,5 +36,6 @@ private fun PlayerProfile.toEntity() = PlayerProfileEntity(
     nickname = nickname,
     age = age,
     costumeId = costumeId,
-    gender = gender
+    gender = gender,
+    hasPlayedIntroNarrative = hasPlayedIntroNarrative
 )

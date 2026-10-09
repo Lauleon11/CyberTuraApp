@@ -11,7 +11,7 @@ import me.lauraleon.cybertura.data.local.entity.WorldProgressEntity
 
 @Database(
     entities = [PlayerProfileEntity::class, WorldProgressEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class CyberturaDatabase : RoomDatabase() {
@@ -27,6 +27,6 @@ abstract class CyberturaDatabase : RoomDatabase() {
                 context.applicationContext,
                 CyberturaDatabase::class.java,
                 NAME
-            ).build()
+            ).fallbackToDestructiveMigration(true).build()
     }
 }
