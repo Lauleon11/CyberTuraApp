@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 
@@ -29,10 +30,22 @@ import me.lauraleon.cybertura.ui.theme.*
 fun World1ScreenE(
     gender: String = "HOMBRE",
     costumeId: String = "spider",
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
     onSuccess: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
+    var hasAnsweredCorrectly by remember { mutableStateOf(false) }
+    var showCorrectPopup by remember { mutableStateOf(false) }
+
+    LaunchedEffect(showCorrectPopup) {
+        if (showCorrectPopup) {
+            delay(1500)
+            showCorrectPopup = false
+            onSuccess()
+        }
+    }
 
     val characterRes = remember(gender, costumeId) {
         val isMale = gender.equals("HOMBRE", ignoreCase = true) || gender.contains("HOMBRE", ignoreCase = true)
@@ -104,7 +117,19 @@ fun World1ScreenE(
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Situation Text Box (Top)
+            // Show standalone character image only if standard background is used
+            if (!isCustomBgPresent) {
+                Image(
+                    painter = painterResource(id = characterRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(180.dp)
+                )
+                Spacer(modifier = Modifier.weight(0.5f))
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            // Situation Text Box (Above question)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,7 +143,7 @@ fun World1ScreenE(
                 ) {
                     // Cat Avatar
                     Image(
-                        painter = painterResource(id = characterRes),
+                        painter = painterResource(id = R.drawable.gato_guia),
                         contentDescription = null,
                         modifier = Modifier
                             .size(54.dp)
@@ -138,27 +163,27 @@ fun World1ScreenE(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Show standalone character image only if standard background is used
-            if (!isCustomBgPresent) {
-                Image(
-                    painter = painterResource(id = characterRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(180.dp)
+            // Question Text wrapped in Box with black background and CyberCyan border
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Black.copy(alpha = 0.85f), RoundedCornerShape(16.dp))
+                    .border(2.dp, CyberCyan, RoundedCornerShape(16.dp))
+                    .padding(14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "¿Qué deberías hacer?",
+                    color = CyberCyan,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.weight(0.5f))
             }
 
-            // Question Text
-            Text(
-                text = "¿Qué deberías hacer?",
-                color = CyberCyan,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Black,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 4 Option Buttons (Grid 2x2: A B on top row, C D on bottom row)
             Column(
@@ -189,7 +214,13 @@ fun World1ScreenE(
                 ) {
                     OptionButton(
                         text = "C. No hacer clic y pedir ayuda a un adulto de confianza.",
-                        onClick = onSuccess,
+                        onClick = {
+                            if (!hasAnsweredCorrectly) {
+                                hasAnsweredCorrectly = true
+                                onCorrectAnswer()
+                                showCorrectPopup = true
+                            }
+                        },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton(
@@ -201,6 +232,63 @@ fun World1ScreenE(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+
+        // Top-right points badge
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color.Black.copy(alpha = 0.75f),
+                border = BorderStroke(1.5.dp, CyberCyan)
+            ) {
+                Text(
+                    text = "⭐ $score Pts",
+                    color = CyberCyan,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        // Correct Answer Popup Overlay
+        if (showCorrectPopup) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .background(CyberBackground, RoundedCornerShape(20.dp))
+                        .border(2.dp, CyberSuccess, RoundedCornerShape(20.dp))
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = "🎉 ¡CORRECTO!",
+                        color = CyberSuccess,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "+10 PUNTOS",
+                        color = Color.Yellow,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
 
         // Error Feedback Popup Overlay
@@ -224,14 +312,6 @@ fun World1ScreenE(
                         color = CyberDanger,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "La respuesta correcta es C.",
-                        color = CyberCyan,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -258,44 +338,5 @@ fun World1ScreenE(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun OptionButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier.height(85.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = Color.Black.copy(alpha = 0.65f),
-        border = BorderStroke(1.5.dp, CyberViolet)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = text,
-                color = Color.White,
-                fontSize = 12.sp,
-                lineHeight = 15.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun World1ScreenEPreview() {
-    CyberTuraTheme {
-        World1ScreenE()
     }
 }

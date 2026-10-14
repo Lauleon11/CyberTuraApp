@@ -34,14 +34,15 @@ class GameViewModel @Inject constructor(
 
     fun savePlayer(nickname: String, age: Int, gender: String, costumeId: String) {
         viewModelScope.launch {
-            val current = playerProfile.value
+            val current = playerRepository.observePlayer().firstOrNull()
             val profile = PlayerProfile(
                 id = 1,
                 nickname = nickname,
                 age = age,
                 gender = gender,
                 costumeId = costumeId,
-                hasPlayedIntroNarrative = current?.hasPlayedIntroNarrative ?: false
+                hasPlayedIntroNarrative = current?.hasPlayedIntroNarrative ?: false,
+                score = current?.score ?: 0
             )
             playerRepository.savePlayer(profile)
         }
@@ -49,9 +50,27 @@ class GameViewModel @Inject constructor(
 
     fun setIntroNarrativePlayed(played: Boolean) {
         viewModelScope.launch {
-            playerProfile.value?.let { current ->
-                playerRepository.savePlayer(current.copy(hasPlayedIntroNarrative = played))
+            val current = playerRepository.observePlayer().firstOrNull()
+            current?.let {
+                playerRepository.savePlayer(it.copy(hasPlayedIntroNarrative = played))
             }
+        }
+    }
+
+    fun addScore(points: Int) {
+        viewModelScope.launch {
+            val current = playerRepository.observePlayer().firstOrNull()
+            val currentScore = current?.score ?: 0
+            val newScore = currentScore + points
+            val updated = current?.copy(score = newScore) ?: PlayerProfile(
+                id = 1,
+                nickname = "Jugador",
+                age = 10,
+                costumeId = "spider",
+                gender = "HOMBRE",
+                score = newScore
+            )
+            playerRepository.savePlayer(updated)
         }
     }
 

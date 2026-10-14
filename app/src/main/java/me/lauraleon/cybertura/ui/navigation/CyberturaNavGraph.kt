@@ -73,6 +73,7 @@ fun CyberturaNavGraph(
         }
         composable<Screen3> {
             Screen3(
+                score = playerProfile?.score ?: 0,
                 unlockedWorldMax = unlockedWorldMax,
                 hasPlayedIntroNarrative = hasPlayedIntroNarrative,
                 onNarrativePlayed = { viewModel.setIntroNarrativePlayed(true) },
@@ -127,6 +128,8 @@ fun CyberturaNavGraph(
             World1ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World1ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -137,6 +140,8 @@ fun CyberturaNavGraph(
             World1ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World1ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -147,6 +152,8 @@ fun CyberturaNavGraph(
             World1ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World1ScreenH)
                 }
@@ -189,6 +196,8 @@ fun CyberturaNavGraph(
             World2ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World2ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -199,6 +208,8 @@ fun CyberturaNavGraph(
             World2ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World2ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -209,6 +220,8 @@ fun CyberturaNavGraph(
             World2ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World2ScreenH)
                 }
@@ -251,6 +264,8 @@ fun CyberturaNavGraph(
             World3ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World3ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -261,6 +276,8 @@ fun CyberturaNavGraph(
             World3ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World3ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -271,6 +288,8 @@ fun CyberturaNavGraph(
             World3ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World3ScreenH)
                 }
@@ -313,6 +332,8 @@ fun CyberturaNavGraph(
             World4ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World4ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -323,6 +344,8 @@ fun CyberturaNavGraph(
             World4ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World4ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -333,6 +356,8 @@ fun CyberturaNavGraph(
             World4ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World4ScreenH)
                 }
@@ -375,6 +400,8 @@ fun CyberturaNavGraph(
             World5ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World5ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -385,6 +412,8 @@ fun CyberturaNavGraph(
             World5ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World5ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -395,6 +424,8 @@ fun CyberturaNavGraph(
             World5ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
+                score = playerProfile?.score ?: 0,
+                onCorrectAnswer = { viewModel.addScore(10) },
                 onSuccess = {
                     navController.navigate(World5ScreenH)
                 }

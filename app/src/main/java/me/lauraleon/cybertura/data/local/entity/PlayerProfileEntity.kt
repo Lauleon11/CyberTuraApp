@@ -10,5 +10,6 @@ data class PlayerProfileEntity(
     val age: Int,
     val costumeId: String,
     val gender: String,
-    val hasPlayedIntroNarrative: Boolean = false
+    val hasPlayedIntroNarrative: Boolean = false,
+    val score: Int = 0
 )

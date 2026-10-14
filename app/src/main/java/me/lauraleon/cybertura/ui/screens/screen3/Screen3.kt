@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.screen3
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,6 +47,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun Screen3(
+    score: Int = 0,
     unlockedWorldMax: Int = 1,
     hasPlayedIntroNarrative: Boolean = false,
     onNarrativePlayed: () -> Unit = {},
@@ -119,26 +122,45 @@ fun Screen3(
                 Text(
                     text = "MUNDOS DIGITALES",
                     color = CyberCyan,
-                    fontSize = 24.sp,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp
                 )
 
-                IconButton(
-                    onClick = onBadgesClick,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(CyberViolet.copy(alpha = 0.5f), CircleShape)
-                        .border(2.dp, CyberCyan, CircleShape)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.mundo1),
-                        contentDescription = "Insignias",
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color.Black.copy(alpha = 0.75f),
+                        border = BorderStroke(1.5.dp, CyberCyan)
+                    ) {
+                        Text(
+                            text = "⭐ $score Pts",
+                            color = CyberCyan,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onBadgesClick,
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
+                            .size(48.dp)
+                            .background(CyberViolet.copy(alpha = 0.5f), CircleShape)
+                            .border(2.dp, CyberCyan, CircleShape)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.mundo1),
+                            contentDescription = "Insignias",
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
             }
 
@@ -308,7 +330,7 @@ fun NarrativeBox(text: String) {
         ) {
             // Cat Avatar
             Image(
-                painter = painterResource(id = R.drawable.spidergato),
+                painter = painterResource(id = R.drawable.gato_guia),
                 contentDescription = null,
                 modifier = Modifier
                     .size(60.dp)
