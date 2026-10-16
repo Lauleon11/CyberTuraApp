@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.domain.model.World
 import me.lauraleon.cybertura.ui.theme.CyberCyan
+import me.lauraleon.cybertura.ui.theme.CyberSuccess
 import me.lauraleon.cybertura.ui.theme.CyberTuraTheme
 import me.lauraleon.cybertura.ui.theme.CyberViolet
 
@@ -49,6 +50,7 @@ import kotlinx.coroutines.delay
 fun Screen3(
     score: Int = 0,
     unlockedWorldMax: Int = 1,
+    completedWorldIds: Set<Int> = emptySet(),
     hasPlayedIntroNarrative: Boolean = false,
     onNarrativePlayed: () -> Unit = {},
     onWorldClick: (World) -> Unit = {},
@@ -177,15 +179,22 @@ fun Screen3(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    val w1Completed = 1 in completedWorldIds || 1 < unlockedWorldMax
+                    val w1Locked = 1 > unlockedWorldMax && !w1Completed
                     WorldButton(
                         world = World.ALL[0],
-                        isLocked = World.ALL[0].id > unlockedWorldMax,
+                        isLocked = w1Locked,
+                        isCompleted = w1Completed,
                         onClick = { onWorldClick(World.ALL[0]) },
                         modifier = Modifier.weight(1f)
                     )
+
+                    val w2Completed = 2 in completedWorldIds || 2 < unlockedWorldMax
+                    val w2Locked = 2 > unlockedWorldMax && !w2Completed
                     WorldButton(
                         world = World.ALL[1],
-                        isLocked = World.ALL[1].id > unlockedWorldMax,
+                        isLocked = w2Locked,
+                        isCompleted = w2Completed,
                         onClick = { onWorldClick(World.ALL[1]) },
                         modifier = Modifier.weight(1f)
                     )
@@ -196,24 +205,34 @@ fun Screen3(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    val w3Completed = 3 in completedWorldIds || 3 < unlockedWorldMax
+                    val w3Locked = 3 > unlockedWorldMax && !w3Completed
                     WorldButton(
                         world = World.ALL[2],
-                        isLocked = World.ALL[2].id > unlockedWorldMax,
+                        isLocked = w3Locked,
+                        isCompleted = w3Completed,
                         onClick = { onWorldClick(World.ALL[2]) },
                         modifier = Modifier.weight(1f)
                     )
+
+                    val w4Completed = 4 in completedWorldIds || 4 < unlockedWorldMax
+                    val w4Locked = 4 > unlockedWorldMax && !w4Completed
                     WorldButton(
                         world = World.ALL[3],
-                        isLocked = World.ALL[3].id > unlockedWorldMax,
+                        isLocked = w4Locked,
+                        isCompleted = w4Completed,
                         onClick = { onWorldClick(World.ALL[3]) },
                         modifier = Modifier.weight(1f)
                     )
                 }
 
                 // Row 3: World 5 centered
+                val w5Completed = 5 in completedWorldIds
+                val w5Locked = 5 > unlockedWorldMax && !w5Completed
                 WorldButton(
                     world = World.ALL[4],
-                    isLocked = World.ALL[4].id > unlockedWorldMax,
+                    isLocked = w5Locked,
+                    isCompleted = w5Completed,
                     onClick = { onWorldClick(World.ALL[4]) },
                     modifier = Modifier
                         .width(160.dp)
@@ -240,6 +259,7 @@ fun Screen3(
 fun WorldButton(
     world: World,
     isLocked: Boolean,
+    isCompleted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -252,17 +272,23 @@ fun WorldButton(
         else -> R.drawable.mundo1
     }
 
+    val isClickable = !isLocked && !isCompleted
+
     Card(
         modifier = modifier
             .aspectRatio(1f)
-            .clickable(enabled = !isLocked) { onClick() }
+            .clickable(enabled = isClickable) { onClick() }
             .border(
                 width = 2.dp,
-                color = if (isLocked) Color.Gray.copy(alpha = 0.5f) else CyberViolet,
+                color = when {
+                    isCompleted -> CyberSuccess
+                    isLocked -> Color.Gray.copy(alpha = 0.5f)
+                    else -> CyberViolet
+                },
                 shape = RoundedCornerShape(16.dp)
             ),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isLocked) 0.dp else 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isClickable) 8.dp else 0.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -270,15 +296,15 @@ fun WorldButton(
                 contentDescription = world.name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                alpha = if (isLocked) 0.5f else 1f
+                alpha = if (isClickable) 1f else 0.4f
             )
-            
+
             // Locked Overlay
             if (isLocked) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.4f)),
+                        .background(Color.Black.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -287,6 +313,36 @@ fun WorldButton(
                         tint = Color.White.copy(alpha = 0.7f),
                         modifier = Modifier.size(40.dp)
                     )
+                }
+            }
+
+            // Completed Overlay
+            if (isCompleted) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "✅",
+                            fontSize = 28.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = CyberSuccess.copy(alpha = 0.85f)
+                        ) {
+                            Text(
+                                text = "COMPLETADO",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Black,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                 }
             }
 

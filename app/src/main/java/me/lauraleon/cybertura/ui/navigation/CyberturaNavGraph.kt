@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import me.lauraleon.cybertura.domain.model.WorldStatus
 import me.lauraleon.cybertura.ui.screens.screen1.Screen1
 import me.lauraleon.cybertura.ui.screens.screen2.Screen2
 import me.lauraleon.cybertura.ui.screens.screen3.Screen3
@@ -31,7 +32,9 @@ fun CyberturaNavGraph(
 ) {
     val navController = rememberNavController()
     val playerProfile by viewModel.playerProfile.collectAsState()
+    val worlds by viewModel.worlds.collectAsState()
     val unlockedWorldMax by viewModel.unlockedWorldMax.collectAsState()
+    val completedWorldIds = worlds.filter { it.progress.status == WorldStatus.COMPLETED }.map { it.world.id }.toSet()
 
     var isProfileLoaded by remember { mutableStateOf(false) }
     LaunchedEffect(playerProfile) {
@@ -75,10 +78,12 @@ fun CyberturaNavGraph(
             Screen3(
                 score = playerProfile?.score ?: 0,
                 unlockedWorldMax = unlockedWorldMax,
+                completedWorldIds = completedWorldIds,
                 hasPlayedIntroNarrative = hasPlayedIntroNarrative,
                 onNarrativePlayed = { viewModel.setIntroNarrativePlayed(true) },
                 onWorldClick = { world ->
-                    if (world.id <= unlockedWorldMax) {
+                    val isCompleted = world.id in completedWorldIds || world.id < unlockedWorldMax
+                    if (world.id <= unlockedWorldMax && !isCompleted) {
                         when (world.id) {
                             1 -> navController.navigate(World1ScreenA)
                             2 -> navController.navigate(World2ScreenA)
@@ -105,16 +110,31 @@ fun CyberturaNavGraph(
         // World 1
         composable<World1ScreenA> {
             World1ScreenA(onNextClick = {
+                navController.navigate(World1ScreenAActivityRoute)
+            })
+        }
+        composable<World1ScreenAActivityRoute> {
+            World1ScreenAActivity(onNextClick = {
                 navController.navigate(World1ScreenB)
             })
         }
         composable<World1ScreenB> {
             World1ScreenB(onNextClick = {
+                navController.navigate(World1ScreenBActivityRoute)
+            })
+        }
+        composable<World1ScreenBActivityRoute> {
+            World1ScreenBActivity(onNextClick = {
                 navController.navigate(World1ScreenC)
             })
         }
         composable<World1ScreenC> {
             World1ScreenC(onNextClick = {
+                navController.navigate(World1ScreenCActivityRoute)
+            })
+        }
+        composable<World1ScreenCActivityRoute> {
+            World1ScreenCActivity(onNextClick = {
                 navController.navigate(World1ScreenD)
             })
         }
@@ -173,16 +193,31 @@ fun CyberturaNavGraph(
         // World 2
         composable<World2ScreenA> {
             World2ScreenA(onNextClick = {
+                navController.navigate(World2ScreenAActivityRoute)
+            })
+        }
+        composable<World2ScreenAActivityRoute> {
+            World2ScreenAActivity(onNextClick = {
                 navController.navigate(World2ScreenB)
             })
         }
         composable<World2ScreenB> {
             World2ScreenB(onNextClick = {
+                navController.navigate(World2ScreenBActivityRoute)
+            })
+        }
+        composable<World2ScreenBActivityRoute> {
+            World2ScreenBActivity(onNextClick = {
                 navController.navigate(World2ScreenC)
             })
         }
         composable<World2ScreenC> {
             World2ScreenC(onNextClick = {
+                navController.navigate(World2ScreenCActivityRoute)
+            })
+        }
+        composable<World2ScreenCActivityRoute> {
+            World2ScreenCActivity(onNextClick = {
                 navController.navigate(World2ScreenD)
             })
         }
@@ -241,16 +276,31 @@ fun CyberturaNavGraph(
         // World 3
         composable<World3ScreenA> {
             World3ScreenA(onNextClick = {
+                navController.navigate(World3ScreenAActivityRoute)
+            })
+        }
+        composable<World3ScreenAActivityRoute> {
+            World3ScreenAActivity(onNextClick = {
                 navController.navigate(World3ScreenB)
             })
         }
         composable<World3ScreenB> {
             World3ScreenB(onNextClick = {
+                navController.navigate(World3ScreenBActivityRoute)
+            })
+        }
+        composable<World3ScreenBActivityRoute> {
+            World3ScreenBActivity(onNextClick = {
                 navController.navigate(World3ScreenC)
             })
         }
         composable<World3ScreenC> {
             World3ScreenC(onNextClick = {
+                navController.navigate(World3ScreenCActivityRoute)
+            })
+        }
+        composable<World3ScreenCActivityRoute> {
+            World3ScreenCActivity(onNextClick = {
                 navController.navigate(World3ScreenD)
             })
         }
@@ -309,16 +359,31 @@ fun CyberturaNavGraph(
         // World 4
         composable<World4ScreenA> {
             World4ScreenA(onNextClick = {
+                navController.navigate(World4ScreenAActivityRoute)
+            })
+        }
+        composable<World4ScreenAActivityRoute> {
+            World4ScreenAActivity(onNextClick = {
                 navController.navigate(World4ScreenB)
             })
         }
         composable<World4ScreenB> {
             World4ScreenB(onNextClick = {
+                navController.navigate(World4ScreenBActivityRoute)
+            })
+        }
+        composable<World4ScreenBActivityRoute> {
+            World4ScreenBActivity(onNextClick = {
                 navController.navigate(World4ScreenC)
             })
         }
         composable<World4ScreenC> {
             World4ScreenC(onNextClick = {
+                navController.navigate(World4ScreenCActivityRoute)
+            })
+        }
+        composable<World4ScreenCActivityRoute> {
+            World4ScreenCActivity(onNextClick = {
                 navController.navigate(World4ScreenD)
             })
         }
@@ -377,16 +442,31 @@ fun CyberturaNavGraph(
         // World 5
         composable<World5ScreenA> {
             World5ScreenA(onNextClick = {
+                navController.navigate(World5ScreenAActivityRoute)
+            })
+        }
+        composable<World5ScreenAActivityRoute> {
+            World5ScreenAActivity(onNextClick = {
                 navController.navigate(World5ScreenB)
             })
         }
         composable<World5ScreenB> {
             World5ScreenB(onNextClick = {
+                navController.navigate(World5ScreenBActivityRoute)
+            })
+        }
+        composable<World5ScreenBActivityRoute> {
+            World5ScreenBActivity(onNextClick = {
                 navController.navigate(World5ScreenC)
             })
         }
         composable<World5ScreenC> {
             World5ScreenC(onNextClick = {
+                navController.navigate(World5ScreenCActivityRoute)
+            })
+        }
+        composable<World5ScreenCActivityRoute> {
+            World5ScreenCActivity(onNextClick = {
                 navController.navigate(World5ScreenD)
             })
         }
