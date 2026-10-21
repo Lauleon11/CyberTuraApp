@@ -74,10 +74,7 @@ fun World5ScreenG(
         var mp: MediaPlayer? = null
         if (showErrorDialog) {
             try {
-                var resId = context.resources.getIdentifier("m5_error_g", "raw", context.packageName)
-                if (resId == 0) {
-                    resId = context.resources.getIdentifier("phishing_error", "raw", context.packageName)
-                }
+                val resId = context.resources.getIdentifier("intentalo_de_nuevo", "raw", context.packageName)
                 if (resId != 0) {
                     mp = MediaPlayer.create(context, resId)?.apply {
                         start()

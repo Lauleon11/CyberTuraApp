@@ -28,31 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
-
-private data class HangmanWord(
-    val word: String,
-    val hint: String,
-    val explanation: String
-)
 
 @Composable
 fun World3ScreenBActivity(
     onNextClick: () -> Unit = {}
 ) {
-    val wordsList = remember {
-        listOf(
-            HangmanWord("ACOSO", "Conducta repetida de insultar, amenazar o molestar por internet.", "Si alguien te insulta, amenaza o molesta repetidamente por internet, no tienes que enfrentarlo a solas. Busca ayuda."),
-            HangmanWord("EVIDENCIA", "Pruebas o capturas de pantalla de los mensajes recibidos.", "Guardar capturas de los mensajes puede ayudar a explicar lo ocurrido a un adulto de confianza."),
-            HangmanWord("AMISTAD", "Apoyo, escucha y acompañamiento a quien está sufriendo.", "Escuchar, acompañar y apoyar a quien está triste puede hacer que se sienta menos solo.")
-        )
-    }
-
-    var currentWordIndex by remember { mutableIntStateOf(0) }
-    val currentHangmanWord = wordsList.getOrNull(currentWordIndex) ?: wordsList.last()
-    val targetWord = currentHangmanWord.word
+    val targetWord = "ACOSO"
+    val hint = "Si alguien te insulta, amenaza o molesta repetidamente por internet, busca ayuda."
+    val explanation = "Si alguien te insulta, amenaza o molesta repetidamente por internet, no tienes que enfrentarlo a solas. Busca ayuda."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
@@ -77,21 +62,6 @@ fun World3ScreenBActivity(
         }
     }
 
-    val isAllCompleted by remember {
-        derivedStateOf {
-            currentWordIndex >= wordsList.size - 1 && isWordSolved
-        }
-    }
-
-    // Auto-advance to next word when word is solved
-    LaunchedEffect(isWordSolved, currentWordIndex) {
-        if (isWordSolved && currentWordIndex < wordsList.size - 1) {
-            delay(1800)
-            currentWordIndex += 1
-            guessedLetters.clear()
-        }
-    }
-
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
@@ -110,10 +80,19 @@ fun World3ScreenBActivity(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_world3),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,14 +137,7 @@ fun World3ScreenBActivity(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Palabra ${currentWordIndex + 1} de ${wordsList.size}",
-                            color = CyberMagenta,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "💡 Pista: ${currentHangmanWord.hint}",
+                            text = "💡 Pista: $hint",
                             color = Color.White,
                             fontSize = 12.sp,
                             lineHeight = 15.sp
@@ -177,11 +149,10 @@ fun World3ScreenBActivity(
             Spacer(modifier = Modifier.height(10.dp))
 
             // Escudo Protector Progress Indicator
-            val shieldPartsCount = if (isWordSolved) currentWordIndex + 1 else currentWordIndex
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, if (shieldPartsCount > 0) CyberSuccess else CyberViolet)
+                border = BorderStroke(1.dp, if (isWordSolved) CyberSuccess else CyberViolet)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -189,13 +160,8 @@ fun World3ScreenBActivity(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = when (shieldPartsCount) {
-                            1 -> "🛡️ Escudo Base Activado"
-                            2 -> "🛡️⚡ Escudo Reforzado"
-                            3 -> "🛡️✨ ESCUDO PROTECTOR COMPLETO"
-                            else -> "🛡️ Construyendo Escudo..."
-                        },
-                        color = if (shieldPartsCount > 0) CyberSuccess else CyberCyan,
+                        text = if (isWordSolved) "🛡️✨ ESCUDO PROTECTOR COMPLETO" else "🛡️ Construyendo Escudo...",
+                        color = if (isWordSolved) CyberSuccess else CyberCyan,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -224,7 +190,7 @@ fun World3ScreenBActivity(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "💡 ${currentHangmanWord.explanation}",
+                        text = "💡 $explanation",
                         color = CyberSuccess,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -367,7 +333,7 @@ fun World3ScreenBActivity(
 
             // Completion Banner and Continuation Button
             AnimatedVisibility(
-                visible = isAllCompleted,
+                visible = isWordSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -400,7 +366,7 @@ fun World3ScreenBActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA C",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

@@ -28,32 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
-
-private data class HangmanWord(
-    val internalWord: String,
-    val displayWord: String,
-    val hint: String
-)
 
 @Composable
 fun World2ScreenBActivity(
     onNextClick: () -> Unit = {}
 ) {
-    val wordsList = remember {
-        listOf(
-            HangmanWord("CONTRASENA", "CONTRASEÑA", "Es una combinación secreta que utilizas para proteger tus cuentas."),
-            HangmanWord("PRIVACIDAD", "PRIVACIDAD", "Significa cuidar tu información personal."),
-            HangmanWord("BLOQUEO", "BLOQUEO", "Ayuda a impedir que otras personas accedan a tu dispositivo.")
-        )
-    }
-
-    var currentWordIndex by remember { mutableIntStateOf(0) }
-    val currentHangmanWord = wordsList.getOrNull(currentWordIndex) ?: wordsList.last()
-    val internalTarget = currentHangmanWord.internalWord
-    val displayTarget = currentHangmanWord.displayWord
+    val internalTarget = "CONTRASENA"
+    val displayTarget = "CONTRASEÑA"
+    val hint = "Es una combinación secreta que utilizas para proteger tus cuentas."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
@@ -80,21 +64,6 @@ fun World2ScreenBActivity(
         }
     }
 
-    val isAllCompleted by remember {
-        derivedStateOf {
-            currentWordIndex >= wordsList.size - 1 && isWordSolved
-        }
-    }
-
-    // Auto-advance to next word when word is solved
-    LaunchedEffect(isWordSolved, currentWordIndex) {
-        if (isWordSolved && currentWordIndex < wordsList.size - 1) {
-            delay(1200)
-            currentWordIndex += 1
-            guessedLetters.clear()
-        }
-    }
-
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
@@ -113,10 +82,19 @@ fun World2ScreenBActivity(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.mundo2),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -161,14 +139,7 @@ fun World2ScreenBActivity(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Palabra ${currentWordIndex + 1} de ${wordsList.size}",
-                            color = CyberMagenta,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "💡 Pista: ${currentHangmanWord.hint}",
+                            text = "💡 Pista: $hint",
                             color = Color.White,
                             fontSize = 12.sp,
                             lineHeight = 15.sp
@@ -344,7 +315,7 @@ fun World2ScreenBActivity(
 
             // Completion Banner and Continuation Button
             AnimatedVisibility(
-                visible = isAllCompleted,
+                visible = isWordSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -377,7 +348,7 @@ fun World2ScreenBActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA C",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

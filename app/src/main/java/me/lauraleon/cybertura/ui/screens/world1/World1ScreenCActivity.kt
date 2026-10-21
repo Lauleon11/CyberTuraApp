@@ -113,10 +113,19 @@ fun World1ScreenCActivity(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_world1),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -302,7 +311,7 @@ fun World1ScreenCActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA D",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

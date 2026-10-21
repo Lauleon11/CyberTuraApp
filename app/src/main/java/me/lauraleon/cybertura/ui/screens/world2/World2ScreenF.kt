@@ -76,10 +76,7 @@ fun World2ScreenF(
         var mp: MediaPlayer? = null
         if (showErrorDialog) {
             try {
-                var resId = context.resources.getIdentifier("m2_error_f", "raw", context.packageName)
-                if (resId == 0) {
-                    resId = context.resources.getIdentifier("phishing_error", "raw", context.packageName)
-                }
+                val resId = context.resources.getIdentifier("piensalo_de_nuevo", "raw", context.packageName)
                 if (resId != 0) {
                     mp = MediaPlayer.create(context, resId)?.apply {
                         start()

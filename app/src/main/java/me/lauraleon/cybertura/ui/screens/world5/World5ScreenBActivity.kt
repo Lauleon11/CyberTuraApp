@@ -28,43 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
-
-private data class HangmanWord(
-    val word: String,
-    val hint: String,
-    val educationalClue: String
-)
 
 @Composable
 fun World5ScreenBActivity(
     onNextClick: () -> Unit = {}
 ) {
-    val wordsList = remember {
-        listOf(
-            HangmanWord(
-                "PERFIL",
-                "Es la página de una persona dentro de una red social.",
-                "Una foto bonita o un nombre conocido no demuestran por sí solos que una cuenta sea auténtica."
-            ),
-            HangmanWord(
-                "IDENTIDAD",
-                "Es lo que permite distinguir a una persona de otra.",
-                "Antes de confiar en una cuenta, busca señales adicionales para comprobar quién está detrás."
-            ),
-            HangmanWord(
-                "SUPLANTAR",
-                "Es hacerse pasar por otra persona sin su autorización.",
-                "Si sospechas que una cuenta se hace pasar por alguien, no compartas información privada. Consulta con un adulto de confianza y reporta el perfil en la plataforma."
-            )
-        )
-    }
-
-    var currentWordIndex by remember { mutableIntStateOf(0) }
-    val currentHangmanWord = wordsList.getOrNull(currentWordIndex) ?: wordsList.last()
-    val targetWord = currentHangmanWord.word
+    val targetWord = "SUPLANTAR"
+    val hint = "Es hacerse pasar por otra persona sin su autorización en internet."
+    val educationalClue = "Si sospechas que una cuenta se hace pasar por alguien, no compartas información privada. Consulta con un adulto de confianza y reporta el perfil en la plataforma."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
@@ -89,21 +62,6 @@ fun World5ScreenBActivity(
         }
     }
 
-    val isAllCompleted by remember {
-        derivedStateOf {
-            currentWordIndex >= wordsList.size - 1 && isWordSolved
-        }
-    }
-
-    // Auto-advance to next word when word is solved
-    LaunchedEffect(isWordSolved, currentWordIndex) {
-        if (isWordSolved && currentWordIndex < wordsList.size - 1) {
-            delay(1800)
-            currentWordIndex += 1
-            guessedLetters.clear()
-        }
-    }
-
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
@@ -122,10 +80,19 @@ fun World5ScreenBActivity(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_world5),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -170,14 +137,7 @@ fun World5ScreenBActivity(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Palabra ${currentWordIndex + 1} de ${wordsList.size}",
-                            color = CyberMagenta,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "💡 Pista: ${currentHangmanWord.hint}",
+                            text = "💡 Pista: $hint",
                             color = Color.White,
                             fontSize = 12.sp,
                             lineHeight = 15.sp
@@ -189,11 +149,10 @@ fun World5ScreenBActivity(
             Spacer(modifier = Modifier.height(10.dp))
 
             // El Suplantador Unmasking Indicator
-            val masksRemovedCount = if (isWordSolved) currentWordIndex + 1 else currentWordIndex
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, if (masksRemovedCount > 0) CyberSuccess else CyberViolet)
+                border = BorderStroke(1.dp, if (isWordSolved) CyberSuccess else CyberViolet)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -201,13 +160,8 @@ fun World5ScreenBActivity(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = when (masksRemovedCount) {
-                            1 -> "🎭 Máscara 1 Retirada: Nombre Verificado"
-                            2 -> "🎭 Máscara 2 Retirada: Señales de Identidad"
-                            3 -> "🎭✨ EL SUPLANTADOR DESENMASCARADO"
-                            else -> "🎭 El Suplantador oculto tras máscaras..."
-                        },
-                        color = if (masksRemovedCount > 0) CyberSuccess else CyberCyan,
+                        text = if (isWordSolved) "🎭✨ EL SUPLANTADOR DESENMASCARADO" else "🎭 El Suplantador oculto tras máscaras...",
+                        color = if (isWordSolved) CyberSuccess else CyberCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -236,7 +190,7 @@ fun World5ScreenBActivity(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "🔍 ${currentHangmanWord.educationalClue}",
+                        text = "🔍 $educationalClue",
                         color = CyberSuccess,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -379,7 +333,7 @@ fun World5ScreenBActivity(
 
             // Completion Banner and Continuation Button
             AnimatedVisibility(
-                visible = isAllCompleted,
+                visible = isWordSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -412,7 +366,7 @@ fun World5ScreenBActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA C",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

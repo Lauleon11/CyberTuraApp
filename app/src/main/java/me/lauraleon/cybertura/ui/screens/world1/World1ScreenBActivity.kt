@@ -28,30 +28,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
-
-private data class HangmanWord(
-    val word: String,
-    val hint: String
-)
 
 @Composable
 fun World1ScreenBActivity(
     onNextClick: () -> Unit = {}
 ) {
-    val wordsList = remember {
-        listOf(
-            HangmanWord("PHISHING", "Ataque o mensaje engañoso para robar tus datos y contraseñas."),
-            HangmanWord("ENLACE", "Dirección o link sospechoso al que te piden ingresar."),
-            HangmanWord("URGENTE", "Prisa o presión falsa que se utiliza para engañarte.")
-        )
-    }
-
-    var currentWordIndex by remember { mutableIntStateOf(0) }
-    val currentHangmanWord = wordsList.getOrNull(currentWordIndex) ?: wordsList.last()
-    val targetWord = currentHangmanWord.word
+    val targetWord = "ENLACE"
+    val hint = "Dirección o link sospechoso al que te piden hacer clic."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
@@ -76,21 +61,6 @@ fun World1ScreenBActivity(
         }
     }
 
-    val isAllCompleted by remember {
-        derivedStateOf {
-            currentWordIndex >= wordsList.size - 1 && isWordSolved
-        }
-    }
-
-    // Auto-advance to next word when word is solved
-    LaunchedEffect(isWordSolved, currentWordIndex) {
-        if (isWordSolved && currentWordIndex < wordsList.size - 1) {
-            delay(1200)
-            currentWordIndex += 1
-            guessedLetters.clear()
-        }
-    }
-
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
@@ -109,10 +79,19 @@ fun World1ScreenBActivity(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_world1),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -157,14 +136,7 @@ fun World1ScreenBActivity(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Palabra ${currentWordIndex + 1} de ${wordsList.size}",
-                            color = CyberMagenta,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "💡 Pista: ${currentHangmanWord.hint}",
+                            text = "💡 Pista: $hint",
                             color = Color.White,
                             fontSize = 12.sp,
                             lineHeight = 15.sp
@@ -337,7 +309,7 @@ fun World1ScreenBActivity(
 
             // Completion Banner and Continuation Button
             AnimatedVisibility(
-                visible = isAllCompleted,
+                visible = isWordSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -351,7 +323,7 @@ fun World1ScreenBActivity(
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
                         Text(
-                            text = "🎉 ¡DESAFÍO COMPLETADO! Has descubierto las 3 palabras del Capitán Phish.",
+                            text = "🎉 ¡DESAFÍO COMPLETADO! Has descubierto la palabra secreta.",
                             color = CyberSuccess,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
@@ -370,7 +342,7 @@ fun World1ScreenBActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA C",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

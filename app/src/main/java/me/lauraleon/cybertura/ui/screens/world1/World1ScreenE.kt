@@ -77,7 +77,7 @@ fun World1ScreenE(
         var mp: MediaPlayer? = null
         if (showErrorDialog) {
             try {
-                val resId = context.resources.getIdentifier("phishing_error", "raw", context.packageName)
+                val resId = context.resources.getIdentifier("cuidado", "raw", context.packageName)
                 if (resId != 0) {
                     mp = MediaPlayer.create(context, resId)?.apply {
                         start()

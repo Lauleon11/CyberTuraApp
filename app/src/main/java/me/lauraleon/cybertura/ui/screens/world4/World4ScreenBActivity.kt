@@ -28,32 +28,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
-
-private data class HangmanWord(
-    val internalWord: String,
-    val displayWord: String,
-    val hint: String
-)
 
 @Composable
 fun World4ScreenBActivity(
     onNextClick: () -> Unit = {}
 ) {
-    val wordsList = remember {
-        listOf(
-            HangmanWord("DIRECCION", "DIRECCIÓN", "Es el lugar donde vives o puedes ser encontrado."),
-            HangmanWord("PRIVADA", "PRIVADA", "Es la información que no debes compartir con cualquier persona."),
-            HangmanWord("TELEFONO", "TELÉFONO", "Tu número puede permitir que otras personas se comuniquen contigo.")
-        )
-    }
-
-    var currentWordIndex by remember { mutableIntStateOf(0) }
-    val currentHangmanWord = wordsList.getOrNull(currentWordIndex) ?: wordsList.last()
-    val internalTarget = currentHangmanWord.internalWord
-    val displayTarget = currentHangmanWord.displayWord
+    val internalTarget = "PRIVADA"
+    val displayTarget = "PRIVADA"
+    val hint = "Es la información personal que no debes compartir con cualquier persona."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
@@ -78,21 +62,6 @@ fun World4ScreenBActivity(
         }
     }
 
-    val isAllCompleted by remember {
-        derivedStateOf {
-            currentWordIndex >= wordsList.size - 1 && isWordSolved
-        }
-    }
-
-    // Auto-advance to next word when word is solved
-    LaunchedEffect(isWordSolved, currentWordIndex) {
-        if (isWordSolved && currentWordIndex < wordsList.size - 1) {
-            delay(1500)
-            currentWordIndex += 1
-            guessedLetters.clear()
-        }
-    }
-
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
@@ -111,10 +80,19 @@ fun World4ScreenBActivity(
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
+        modifier = Modifier.fillMaxSize()
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.background_world4),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -159,14 +137,7 @@ fun World4ScreenBActivity(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Palabra ${currentWordIndex + 1} de ${wordsList.size}",
-                            color = CyberMagenta,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "💡 Pista: ${currentHangmanWord.hint}",
+                            text = "💡 Pista: $hint",
                             color = Color.White,
                             fontSize = 12.sp,
                             lineHeight = 15.sp
@@ -189,8 +160,8 @@ fun World4ScreenBActivity(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = if (isWordSolved) "🔒 Dato Personal Bloqueado a El Espía" else if (incorrectCount > 0) "🔍 El Espía buscando pistas..." else "🕵️ El Espía intentando reunir datos...",
-                        color = if (isWordSolved) CyberSuccess else if (incorrectCount > 0) CyberDanger else CyberCyan,
+                        text = if (isWordSolved) "🔒 Dato Personal Bloqueado a El Espía" else "🕵️ El Espía intentando reunir datos...",
+                        color = if (isWordSolved) CyberSuccess else CyberCyan,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -342,7 +313,7 @@ fun World4ScreenBActivity(
 
             // Completion Banner and Continuation Button
             AnimatedVisibility(
-                visible = isAllCompleted,
+                visible = isWordSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -375,7 +346,7 @@ fun World4ScreenBActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR A LA PANTALLA C",
+                            text = "CONTINUAR",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black

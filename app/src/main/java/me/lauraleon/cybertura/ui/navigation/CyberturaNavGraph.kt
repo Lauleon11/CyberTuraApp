@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -75,6 +76,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<Screen3> {
+            LaunchedEffect(Unit) {
+                viewModel.stopWorldMusic()
+            }
             Screen3(
                 score = playerProfile?.score ?: 0,
                 unlockedWorldMax = unlockedWorldMax,
@@ -114,6 +118,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenAActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             World1ScreenAActivity(onNextClick = {
                 navController.navigate(World1ScreenB)
             })
@@ -124,6 +132,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenBActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             World1ScreenBActivity(onNextClick = {
                 navController.navigate(World1ScreenC)
             })
@@ -134,6 +146,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenCActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             World1ScreenCActivity(onNextClick = {
                 navController.navigate(World1ScreenD)
             })
@@ -144,6 +160,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenE> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             val route: World1ScreenE = backStackEntry.toRoute()
             World1ScreenE(
                 gender = route.gender,
@@ -156,6 +176,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World1ScreenF> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             val route: World1ScreenF = backStackEntry.toRoute()
             World1ScreenF(
                 gender = route.gender,
@@ -168,6 +192,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World1ScreenG> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 1)
+            }
             val route: World1ScreenG = backStackEntry.toRoute()
             World1ScreenG(
                 gender = route.gender,
@@ -197,6 +225,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenAActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             World2ScreenAActivity(onNextClick = {
                 navController.navigate(World2ScreenB)
             })
@@ -207,6 +239,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenBActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             World2ScreenBActivity(onNextClick = {
                 navController.navigate(World2ScreenC)
             })
@@ -217,6 +253,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenCActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             World2ScreenCActivity(onNextClick = {
                 navController.navigate(World2ScreenD)
             })
@@ -227,6 +267,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenE> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             val route: World2ScreenE = backStackEntry.toRoute()
             World2ScreenE(
                 gender = route.gender,
@@ -239,6 +283,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World2ScreenF> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             val route: World2ScreenF = backStackEntry.toRoute()
             World2ScreenF(
                 gender = route.gender,
@@ -251,6 +299,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World2ScreenG> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 2)
+            }
             val route: World2ScreenG = backStackEntry.toRoute()
             World2ScreenG(
                 gender = route.gender,
@@ -280,6 +332,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenAActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             World3ScreenAActivity(onNextClick = {
                 navController.navigate(World3ScreenB)
             })
@@ -290,6 +346,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenBActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             World3ScreenBActivity(onNextClick = {
                 navController.navigate(World3ScreenC)
             })
@@ -300,6 +360,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenCActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             World3ScreenCActivity(onNextClick = {
                 navController.navigate(World3ScreenD)
             })
@@ -310,6 +374,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenE> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             val route: World3ScreenE = backStackEntry.toRoute()
             World3ScreenE(
                 gender = route.gender,
@@ -322,6 +390,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World3ScreenF> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             val route: World3ScreenF = backStackEntry.toRoute()
             World3ScreenF(
                 gender = route.gender,
@@ -334,6 +406,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World3ScreenG> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 3)
+            }
             val route: World3ScreenG = backStackEntry.toRoute()
             World3ScreenG(
                 gender = route.gender,
@@ -363,6 +439,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenAActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             World4ScreenAActivity(onNextClick = {
                 navController.navigate(World4ScreenB)
             })
@@ -373,6 +453,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenBActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             World4ScreenBActivity(onNextClick = {
                 navController.navigate(World4ScreenC)
             })
@@ -383,6 +467,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenCActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             World4ScreenCActivity(onNextClick = {
                 navController.navigate(World4ScreenD)
             })
@@ -393,6 +481,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenE> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             val route: World4ScreenE = backStackEntry.toRoute()
             World4ScreenE(
                 gender = route.gender,
@@ -405,6 +497,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World4ScreenF> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             val route: World4ScreenF = backStackEntry.toRoute()
             World4ScreenF(
                 gender = route.gender,
@@ -417,6 +513,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World4ScreenG> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 4)
+            }
             val route: World4ScreenG = backStackEntry.toRoute()
             World4ScreenG(
                 gender = route.gender,
@@ -446,6 +546,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenAActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             World5ScreenAActivity(onNextClick = {
                 navController.navigate(World5ScreenB)
             })
@@ -456,6 +560,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenBActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             World5ScreenBActivity(onNextClick = {
                 navController.navigate(World5ScreenC)
             })
@@ -466,6 +574,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenCActivityRoute> {
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             World5ScreenCActivity(onNextClick = {
                 navController.navigate(World5ScreenD)
             })
@@ -476,6 +588,10 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenE> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             val route: World5ScreenE = backStackEntry.toRoute()
             World5ScreenE(
                 gender = route.gender,
@@ -488,6 +604,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World5ScreenF> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             val route: World5ScreenF = backStackEntry.toRoute()
             World5ScreenF(
                 gender = route.gender,
@@ -500,6 +620,10 @@ fun CyberturaNavGraph(
             )
         }
         composable<World5ScreenG> { backStackEntry ->
+            val context = LocalContext.current
+            LaunchedEffect(Unit) {
+                viewModel.startWorldMusic(context, 5)
+            }
             val route: World5ScreenG = backStackEntry.toRoute()
             World5ScreenG(
                 gender = route.gender,

@@ -1,5 +1,7 @@
 package me.lauraleon.cybertura.ui.viewmodel
 
+import android.content.Context
+import android.media.MediaPlayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +19,9 @@ class GameViewModel @Inject constructor(
     private val playerRepository: PlayerRepository,
     private val worldRepository: WorldRepository
 ) : ViewModel() {
+
+    private var backgroundMediaPlayer: MediaPlayer? = null
+    private var currentPlayingWorld: Int? = null
 
     val playerProfile: StateFlow<PlayerProfile?> = playerRepository.observePlayer()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -78,5 +83,47 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             worldRepository.completeWorld(worldId)
         }
+    }
+
+    fun startWorldMusic(context: Context, worldNumber: Int) {
+        if (currentPlayingWorld == worldNumber && backgroundMediaPlayer != null) {
+            if (backgroundMediaPlayer?.isPlaying == false) {
+                backgroundMediaPlayer?.start()
+            }
+            return
+        }
+
+        stopWorldMusic()
+        currentPlayingWorld = worldNumber
+
+        val resName = "world${worldNumber}_music"
+        val resId = context.resources.getIdentifier(resName, "raw", context.packageName)
+        if (resId != 0) {
+            try {
+                backgroundMediaPlayer = MediaPlayer.create(context.applicationContext, resId)?.apply {
+                    isLooping = true
+                    start()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun stopWorldMusic() {
+        try {
+            backgroundMediaPlayer?.stop()
+            backgroundMediaPlayer?.release()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            backgroundMediaPlayer = null
+            currentPlayingWorld = null
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stopWorldMusic()
     }
 }

@@ -39,11 +39,11 @@ fun HallOfBadgesScreen(
     onBackClick: () -> Unit = {}
 ) {
     val badges = listOf(
-        Badge(1, "Mundo 1: Phishing", R.drawable.mundo1, unlockedWorldMax >= 2),
-        Badge(2, "Mundo 2: Contraseñas", R.drawable.mundo2, unlockedWorldMax >= 3),
-        Badge(3, "Mundo 3: Ciberacoso", R.drawable.mundo3, unlockedWorldMax >= 4),
-        Badge(4, "Mundo 4: Datos Personales", R.drawable.mundo4, unlockedWorldMax >= 5),
-        Badge(5, "Mundo 5: Identidad Digital", R.drawable.mundo5, unlockedWorldMax >= 5)
+        Badge(1, "Mundo 1: Phishing", R.drawable.world1_insignia, unlockedWorldMax >= 2),
+        Badge(2, "Mundo 2: Contraseñas", R.drawable.world2_insignia, unlockedWorldMax >= 3),
+        Badge(3, "Mundo 3: Ciberacoso", R.drawable.world3_insignia, unlockedWorldMax >= 4),
+        Badge(4, "Mundo 4: Datos Personales", R.drawable.world4_insignia, unlockedWorldMax >= 5),
+        Badge(5, "Mundo 5: Identidad Digital", R.drawable.world5_insignia, unlockedWorldMax >= 5)
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
