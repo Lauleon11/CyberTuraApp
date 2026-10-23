@@ -22,6 +22,7 @@ class GameViewModel @Inject constructor(
 
     private var backgroundMediaPlayer: MediaPlayer? = null
     private var currentPlayingWorld: Int? = null
+    private var resumeOnForeground = false
 
     val playerProfile: StateFlow<PlayerProfile?> = playerRepository.observePlayer()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -110,7 +111,35 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    // Pausa sin liberar el reproductor para que la siguiente pantalla con música continúe desde el mismo punto
+    fun pauseWorldMusic() {
+        try {
+            if (backgroundMediaPlayer?.isPlaying == true) {
+                backgroundMediaPlayer?.pause()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun onAppBackground() {
+        resumeOnForeground = backgroundMediaPlayer?.isPlaying == true
+        pauseWorldMusic()
+    }
+
+    fun onAppForeground() {
+        if (resumeOnForeground) {
+            resumeOnForeground = false
+            try {
+                backgroundMediaPlayer?.start()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun stopWorldMusic() {
+        resumeOnForeground = false
         try {
             backgroundMediaPlayer?.stop()
             backgroundMediaPlayer?.release()

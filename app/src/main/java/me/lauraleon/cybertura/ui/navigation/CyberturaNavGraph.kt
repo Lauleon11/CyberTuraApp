@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -58,6 +61,19 @@ fun CyberturaNavGraph(
     val userGender = playerProfile?.gender ?: "HOMBRE"
     val userCostumeId = playerProfile?.costumeId ?: "spider"
     val hasPlayedIntroNarrative = playerProfile?.hasPlayedIntroNarrative ?: false
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> viewModel.onAppBackground()
+                Lifecycle.Event.ON_START -> viewModel.onAppForeground()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable<Screen1> {
@@ -113,6 +129,9 @@ fun CyberturaNavGraph(
         
         // World 1
         composable<World1ScreenA> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World1ScreenA(onNextClick = {
                 navController.navigate(World1ScreenAActivityRoute)
             })
@@ -127,6 +146,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenB> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World1ScreenB(onNextClick = {
                 navController.navigate(World1ScreenBActivityRoute)
             })
@@ -141,6 +163,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenC> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World1ScreenC(onNextClick = {
                 navController.navigate(World1ScreenCActivityRoute)
             })
@@ -155,6 +180,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World1ScreenD> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World1ScreenD(onNextClick = {
                 navController.navigate(World1ScreenE(gender = userGender, costumeId = userCostumeId))
             })
@@ -208,6 +236,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<World1ScreenH> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World1ScreenH(
                 onWorld2Unlocked = {
                     viewModel.completeWorld(1)
@@ -220,6 +251,9 @@ fun CyberturaNavGraph(
 
         // World 2
         composable<World2ScreenA> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World2ScreenA(onNextClick = {
                 navController.navigate(World2ScreenAActivityRoute)
             })
@@ -234,6 +268,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenB> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World2ScreenB(onNextClick = {
                 navController.navigate(World2ScreenBActivityRoute)
             })
@@ -248,6 +285,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenC> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World2ScreenC(onNextClick = {
                 navController.navigate(World2ScreenCActivityRoute)
             })
@@ -262,6 +302,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World2ScreenD> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World2ScreenD(onNextClick = {
                 navController.navigate(World2ScreenE(gender = userGender, costumeId = userCostumeId))
             })
@@ -315,6 +358,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<World2ScreenH> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World2ScreenH(
                 onWorld3Unlocked = {
                     viewModel.completeWorld(2)
@@ -327,6 +373,9 @@ fun CyberturaNavGraph(
 
         // World 3
         composable<World3ScreenA> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World3ScreenA(onNextClick = {
                 navController.navigate(World3ScreenAActivityRoute)
             })
@@ -341,6 +390,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenB> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World3ScreenB(onNextClick = {
                 navController.navigate(World3ScreenBActivityRoute)
             })
@@ -355,6 +407,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenC> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World3ScreenC(onNextClick = {
                 navController.navigate(World3ScreenCActivityRoute)
             })
@@ -369,6 +424,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World3ScreenD> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World3ScreenD(onNextClick = {
                 navController.navigate(World3ScreenE(gender = userGender, costumeId = userCostumeId))
             })
@@ -422,6 +480,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<World3ScreenH> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World3ScreenH(
                 onWorld4Unlocked = {
                     viewModel.completeWorld(3)
@@ -434,6 +495,9 @@ fun CyberturaNavGraph(
 
         // World 4
         composable<World4ScreenA> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World4ScreenA(onNextClick = {
                 navController.navigate(World4ScreenAActivityRoute)
             })
@@ -448,6 +512,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenB> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World4ScreenB(onNextClick = {
                 navController.navigate(World4ScreenBActivityRoute)
             })
@@ -462,6 +529,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenC> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World4ScreenC(onNextClick = {
                 navController.navigate(World4ScreenCActivityRoute)
             })
@@ -476,6 +546,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World4ScreenD> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World4ScreenD(onNextClick = {
                 navController.navigate(World4ScreenE(gender = userGender, costumeId = userCostumeId))
             })
@@ -529,6 +602,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<World4ScreenH> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World4ScreenH(
                 onWorld5Unlocked = {
                     viewModel.completeWorld(4)
@@ -541,6 +617,9 @@ fun CyberturaNavGraph(
 
         // World 5
         composable<World5ScreenA> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World5ScreenA(onNextClick = {
                 navController.navigate(World5ScreenAActivityRoute)
             })
@@ -555,6 +634,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenB> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World5ScreenB(onNextClick = {
                 navController.navigate(World5ScreenBActivityRoute)
             })
@@ -569,6 +651,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenC> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World5ScreenC(onNextClick = {
                 navController.navigate(World5ScreenCActivityRoute)
             })
@@ -583,6 +668,9 @@ fun CyberturaNavGraph(
             })
         }
         composable<World5ScreenD> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World5ScreenD(onNextClick = {
                 navController.navigate(World5ScreenE(gender = userGender, costumeId = userCostumeId))
             })
@@ -636,6 +724,9 @@ fun CyberturaNavGraph(
             )
         }
         composable<World5ScreenH> {
+            LaunchedEffect(Unit) {
+                viewModel.pauseWorldMusic()
+            }
             World5ScreenH(
                 onHallOfBadges = {
                     viewModel.completeWorld(5)
