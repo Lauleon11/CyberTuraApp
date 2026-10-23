@@ -32,16 +32,25 @@ fun World1ScreenG(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
     var hasAnsweredCorrectly by remember { mutableStateOf(false) }
     var showCorrectPopup by remember { mutableStateOf(false) }
 
-    LaunchedEffect(hasAnsweredCorrectly) {
-        if (hasAnsweredCorrectly) {
+    LaunchedEffect(showCorrectPopup) {
+        if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
+            showCorrectPopup = false
             onSuccess()
         }
     }
@@ -194,12 +203,12 @@ fun World1ScreenG(
                 ) {
                     OptionButton(
                         text = "A. Abrir el enlace para saber qué fotografías son.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton(
                         text = "B. Responder preguntando quién es.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -222,7 +231,7 @@ fun World1ScreenG(
                     )
                     OptionButton(
                         text = "D. Enviar el enlace a un amigo para que lo revise.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -262,6 +271,7 @@ fun World1ScreenG(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier

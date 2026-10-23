@@ -2,6 +2,7 @@ package me.lauraleon.cybertura.di
 
 import android.content.Context
 import androidx.room.Room
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,4 +32,8 @@ object DataModule {
     @Provides
     fun provideWorldProgressDao(database: CyberturaDatabase): WorldProgressDao =
         database.worldProgressDao()
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 }

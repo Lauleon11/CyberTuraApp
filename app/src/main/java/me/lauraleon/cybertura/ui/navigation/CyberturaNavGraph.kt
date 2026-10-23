@@ -22,6 +22,7 @@ import me.lauraleon.cybertura.ui.screens.screen1.Screen1
 import me.lauraleon.cybertura.ui.screens.screen2.Screen2
 import me.lauraleon.cybertura.ui.screens.screen3.Screen3
 import me.lauraleon.cybertura.ui.screens.badges.HallOfBadgesScreen
+import me.lauraleon.cybertura.ui.screens.rating.RatingScreen
 import me.lauraleon.cybertura.ui.screens.world1.*
 import me.lauraleon.cybertura.ui.screens.world2.*
 import me.lauraleon.cybertura.ui.screens.world3.*
@@ -121,8 +122,27 @@ fun CyberturaNavGraph(
         composable<HallOfBadgesRoute> {
             HallOfBadgesScreen(
                 unlockedWorldMax = unlockedWorldMax,
+                completedWorldIds = completedWorldIds,
+                onPlayAgain = {
+                    viewModel.resetGame()
+                    navController.navigate(Screen3) {
+                        popUpTo<Screen1> { inclusive = true }
+                    }
+                },
                 onBackClick = {
                     navController.popBackStack()
+                }
+            )
+        }
+        composable<RatingScreenRoute> {
+            RatingScreen(
+                onRatingSubmitted = { stars, comment ->
+                    viewModel.saveRating(stars, comment)
+                },
+                onNavigateToBadges = {
+                    navController.navigate(HallOfBadgesRoute) {
+                        popUpTo<Screen3> { inclusive = false }
+                    }
                 }
             )
         }
@@ -198,6 +218,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(1, 'E') },
                 onSuccess = {
                     navController.navigate(World1ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -214,6 +235,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(1, 'F') },
                 onSuccess = {
                     navController.navigate(World1ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -230,6 +252,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(1, 'G') },
                 onSuccess = {
                     navController.navigate(World1ScreenH)
                 }
@@ -320,6 +343,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(2, 'E') },
                 onSuccess = {
                     navController.navigate(World2ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -336,6 +360,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(2, 'F') },
                 onSuccess = {
                     navController.navigate(World2ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -352,6 +377,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(2, 'G') },
                 onSuccess = {
                     navController.navigate(World2ScreenH)
                 }
@@ -442,6 +468,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(3, 'E') },
                 onSuccess = {
                     navController.navigate(World3ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -458,6 +485,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(3, 'F') },
                 onSuccess = {
                     navController.navigate(World3ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -474,6 +502,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(3, 'G') },
                 onSuccess = {
                     navController.navigate(World3ScreenH)
                 }
@@ -564,6 +593,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(4, 'E') },
                 onSuccess = {
                     navController.navigate(World4ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -580,6 +610,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(4, 'F') },
                 onSuccess = {
                     navController.navigate(World4ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -596,6 +627,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(4, 'G') },
                 onSuccess = {
                     navController.navigate(World4ScreenH)
                 }
@@ -686,6 +718,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(5, 'E') },
                 onSuccess = {
                     navController.navigate(World5ScreenF(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -702,6 +735,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(5, 'F') },
                 onSuccess = {
                     navController.navigate(World5ScreenG(gender = route.gender, costumeId = route.costumeId))
                 }
@@ -718,6 +752,7 @@ fun CyberturaNavGraph(
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
                 onCorrectAnswer = { viewModel.addScore(10) },
+                onIncorrectAttempt = { viewModel.recordAttempt(5, 'G') },
                 onSuccess = {
                     navController.navigate(World5ScreenH)
                 }
@@ -728,10 +763,16 @@ fun CyberturaNavGraph(
                 viewModel.pauseWorldMusic()
             }
             World5ScreenH(
-                onHallOfBadges = {
+                onRating = {
                     viewModel.completeWorld(5)
-                    navController.navigate(HallOfBadgesRoute) {
-                        popUpTo<Screen3> { inclusive = false }
+                    if (playerProfile?.hasRated == true) {
+                        navController.navigate(HallOfBadgesRoute) {
+                            popUpTo<Screen3> { inclusive = false }
+                        }
+                    } else {
+                        navController.navigate(RatingScreenRoute) {
+                            popUpTo<Screen3> { inclusive = false }
+                        }
                     }
                 }
             )

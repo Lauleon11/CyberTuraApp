@@ -32,16 +32,25 @@ fun World1ScreenF(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
     var hasAnsweredCorrectly by remember { mutableStateOf(false) }
     var showCorrectPopup by remember { mutableStateOf(false) }
 
-    LaunchedEffect(hasAnsweredCorrectly) {
-        if (hasAnsweredCorrectly) {
+    LaunchedEffect(showCorrectPopup) {
+        if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
+            showCorrectPopup = false
             onSuccess()
         }
     }
@@ -205,7 +214,7 @@ fun World1ScreenF(
                     )
                     OptionButton(
                         text = "B. El mensaje tiene muchas palabras.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -217,12 +226,12 @@ fun World1ScreenF(
                 ) {
                     OptionButton(
                         text = "C. El mensaje fue enviado por la mañana.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton(
                         text = "D. El mensaje tiene una fotografía.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -262,6 +271,7 @@ fun World1ScreenF(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier

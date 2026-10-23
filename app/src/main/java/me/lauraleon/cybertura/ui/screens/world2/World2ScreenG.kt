@@ -32,7 +32,8 @@ fun World2ScreenG(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -41,6 +42,13 @@ fun World2ScreenG(
 
     LaunchedEffect(showCorrectPopup) {
         if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
             showCorrectPopup = false
             onSuccess()
@@ -192,12 +200,12 @@ fun World2ScreenG(
                 ) {
                     OptionButton2(
                         text = "A. Utilizar una contraseña diferente para cada cuenta.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton2(
                         text = "B. Crear contraseñas difíciles de adivinar.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -218,7 +226,7 @@ fun World2ScreenG(
                     )
                     OptionButton2(
                         text = "D. Proteger tus cuentas.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -258,6 +266,7 @@ fun World2ScreenG(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier

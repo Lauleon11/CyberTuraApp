@@ -44,8 +44,8 @@ fun World2ScreenCActivity(
 
     // Look for world2_puzzle_lock resource in drawable, fallback to mundo2
     val imageResId = remember {
-        val resId = context.resources.getIdentifier("world2_puzzle_lock", "drawable", context.packageName)
-        if (resId != 0) resId else R.drawable.mundo2
+        val resId = context.resources.getIdentifier("puzzle2", "drawable", context.packageName)
+        if (resId != 0) resId else R.drawable.puzzle2
     }
 
     // Crop source image into 9 real sub-bitmap pieces (3x3 grid)
@@ -136,7 +136,7 @@ fun World2ScreenCActivity(
 
             // Header Title
             Text(
-                text = "🧩 CONSTRUYE LA CERRADURA SEGURA",
+                text = "🧩 CONSTRUYE LA IMAGEN",
                 color = CyberCyan,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
@@ -146,36 +146,7 @@ fun World2ScreenCActivity(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Guide Cat Message Box
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, CyberCyan)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.gato_guia),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, CyberCyan, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = "¡Arma la cerradura combinando letras, números y símbolos! Toca dos piezas para intercambiar sus posiciones.",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -214,7 +185,7 @@ fun World2ScreenCActivity(
                     // Show Full Unbroken Complete Image when solved
                     Image(
                         painter = painterResource(id = imageResId),
-                        contentDescription = "Cerradura Completa",
+                        contentDescription = "Imagen Completa",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp)),
@@ -294,7 +265,7 @@ fun World2ScreenCActivity(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "🔒 ¡CERRADURA SEGURA CONSTRUIDA!",
+                                text = "🔒 ¡CONTRASEÑA SEGURA CONSTRUIDA!",
                                 color = CyberSuccess,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,

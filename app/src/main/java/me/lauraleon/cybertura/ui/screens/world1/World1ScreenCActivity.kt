@@ -44,8 +44,8 @@ fun World1ScreenCActivity(
 
     // Look for world1_puzzle_message resource in drawable, fallback to mundo1
     val imageResId = remember {
-        val resId = context.resources.getIdentifier("world1_puzzle_message", "drawable", context.packageName)
-        if (resId != 0) resId else R.drawable.mundo1
+        val resId = context.resources.getIdentifier("puzzle1", "drawable", context.packageName)
+        if (resId != 0) resId else R.drawable.puzzle1
     }
 
     // Crop source image into 9 real sub-bitmap pieces (3x3 grid)
@@ -137,7 +137,7 @@ fun World1ScreenCActivity(
 
             // Header Title
             Text(
-                text = "🧩 RECONSTRUYE EL MENSAJE",
+                text = "🧩 RECONSTRUYE LA IMAGEN",
                 color = CyberCyan,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Black,
@@ -146,37 +146,7 @@ fun World1ScreenCActivity(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Guide Cat Message Box
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, CyberCyan)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.gato_guia),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, CyberCyan, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = "¡El Capitán Phish rompió la prueba! Toca dos piezas sucesivamente para intercambiarlas y armar el mensaje.",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -215,7 +185,7 @@ fun World1ScreenCActivity(
                     // Show Full Unbroken Complete Image when solved
                     Image(
                         painter = painterResource(id = imageResId),
-                        contentDescription = "Mensaje Completo",
+                        contentDescription = "Imagen Completa",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp)),
@@ -292,7 +262,7 @@ fun World1ScreenCActivity(
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
                         Text(
-                            text = "🎉 ¡MENSAJE RECONSTRUIDO CON ÉXITO! Has detectado la trampa del premio falso.",
+                            text = "🎉 ¡RECONSTRUIDO CON ÉXITO!",
                             color = CyberSuccess,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,

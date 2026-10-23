@@ -15,6 +15,9 @@ object Screen3
 object HallOfBadgesRoute
 
 @Serializable
+object RatingScreenRoute
+
+@Serializable
 object World1ScreenA
 
 @Serializable

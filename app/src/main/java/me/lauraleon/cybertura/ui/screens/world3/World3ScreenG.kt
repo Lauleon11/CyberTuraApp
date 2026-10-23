@@ -32,7 +32,8 @@ fun World3ScreenG(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -41,6 +42,13 @@ fun World3ScreenG(
 
     LaunchedEffect(showCorrectPopup) {
         if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
             showCorrectPopup = false
             onSuccess()
@@ -190,7 +198,7 @@ fun World3ScreenG(
                 ) {
                     OptionButton3(
                         text = "A. Continuar discutiendo con el agresor.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton3(
@@ -211,12 +219,12 @@ fun World3ScreenG(
                 ) {
                     OptionButton3(
                         text = "C. Compartir el contenido para que más personas lo vean.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton3(
                         text = "D. Crear una cuenta para atacar al agresor.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -256,6 +264,7 @@ fun World3ScreenG(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier

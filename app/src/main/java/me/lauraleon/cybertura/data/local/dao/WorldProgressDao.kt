@@ -17,4 +17,7 @@ interface WorldProgressDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(progress: WorldProgressEntity)
+
+    @Query("DELETE FROM world_progress")
+    suspend fun deleteAll()
 }

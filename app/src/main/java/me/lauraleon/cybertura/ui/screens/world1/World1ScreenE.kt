@@ -2,6 +2,7 @@ package me.lauraleon.cybertura.ui.screens.world1
 
 import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
+import java.util.Random
 
 @Composable
 fun World1ScreenE(
@@ -32,7 +36,8 @@ fun World1ScreenE(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
@@ -41,6 +46,13 @@ fun World1ScreenE(
 
     LaunchedEffect(showCorrectPopup) {
         if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
             showCorrectPopup = false
             onSuccess()
@@ -197,12 +209,12 @@ fun World1ScreenE(
                 ) {
                     OptionButton(
                         text = "A. Hacer clic rápidamente antes de que se acabe el premio.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton(
                         text = "B. Enviar la contraseña para comprobar que eres tú.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -225,7 +237,7 @@ fun World1ScreenE(
                     )
                     OptionButton(
                         text = "D. Compartir el mensaje con tus amigos.",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -265,6 +277,7 @@ fun World1ScreenE(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
@@ -336,6 +349,72 @@ fun World1ScreenE(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConfettiOverlay() {
+    val particleCount = 50
+    val random = remember { Random(42) }
+    val colors = listOf(CyberCyan, CyberMagenta, Color.Yellow, CyberSuccess, CyberViolet, Color.Red, Color.Green, Color.Cyan)
+
+    data class Particle(
+        val x: Float,
+        var y: Float,
+        val speedY: Float,
+        val speedX: Float,
+        val size: Float,
+        val color: Color,
+        val shapeIsCircle: Boolean
+    )
+
+    val particles = remember {
+        mutableStateListOf<Particle>().apply {
+            for (i in 0 until particleCount) {
+                add(
+                    Particle(
+                        x = random.nextFloat() * 1000f,
+                        y = -random.nextFloat() * 500f,
+                        speedY = 4f + random.nextFloat() * 8f,
+                        speedX = -2f + random.nextFloat() * 4f,
+                        size = 8f + random.nextFloat() * 12f,
+                        color = colors[random.nextInt(colors.size)],
+                        shapeIsCircle = random.nextBoolean()
+                    )
+                )
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            withFrameNanos { _ ->
+                for (i in particles.indices) {
+                    val p = particles[i]
+                    var newY = p.y + p.speedY
+                    var newX = p.x + p.speedX
+                    if (newY > 2000f) {
+                        newY = -50f
+                        newX = random.nextFloat() * 1000f
+                    }
+                    particles[i] = p.copy(y = newY, x = newX)
+                }
+            }
+        }
+    }
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val width = size.width
+        val height = size.height
+        particles.forEach { p ->
+            val drawX = (p.x / 1000f) * width
+            val drawY = (p.y / 2000f) * height
+            if (p.shapeIsCircle) {
+                drawCircle(color = p.color, radius = p.size, center = Offset(drawX, drawY))
+            } else {
+                drawRect(color = p.color, topLeft = androidx.compose.ui.geometry.Offset(drawX, drawY), size = Size(p.size * 1.5f, p.size))
             }
         }
     }

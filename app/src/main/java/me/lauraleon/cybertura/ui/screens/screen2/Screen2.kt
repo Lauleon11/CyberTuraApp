@@ -47,6 +47,7 @@ fun Screen2(
     var age by remember { mutableFloatStateOf(10f) }
     var selectedGender by remember { mutableStateOf(Gender.HOMBRE) }
     var selectedCharacterId by remember { mutableStateOf("spider") }
+    var showWarning by remember { mutableStateOf(false) }
 
     Screen2Content(
         alias = alias,
@@ -58,8 +59,17 @@ fun Screen2(
             selectedGender = it
         },
         selectedCharacterId = selectedCharacterId,
-        onCharacterSelect = { selectedCharacterId = it }
-    ) { onContinue(alias, age.toInt(), selectedGender.name, selectedCharacterId) }
+        onCharacterSelect = { selectedCharacterId = it },
+        showWarning = showWarning,
+        onDismissWarning = { showWarning = false },
+        onContinue = {
+            if (alias.isBlank()) {
+                showWarning = true
+            } else {
+                onContinue(alias, age.toInt(), selectedGender.name, selectedCharacterId)
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +83,8 @@ fun Screen2Content(
     onGenderSelect: (Gender) -> Unit,
     selectedCharacterId: String,
     onCharacterSelect: (String) -> Unit,
+    showWarning: Boolean,
+    onDismissWarning: () -> Unit,
     onContinue: () -> Unit
 ) {
     val characters = listOf(
@@ -259,6 +271,54 @@ fun Screen2Content(
             }
 
             Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        // Warning Dialog Popup Overlay
+        if (showWarning) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .background(CyberBackground, RoundedCornerShape(20.dp))
+                        .border(2.dp, CyberDanger, RoundedCornerShape(20.dp))
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = "⚠️ ¡Atención!",
+                        color = CyberDanger,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Por favor, escribe tu alias o apodo para continuar",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        lineHeight = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(
+                        onClick = onDismissWarning,
+                        colors = ButtonDefaults.buttonColors(containerColor = CyberViolet),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "ENTENDIDO",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }

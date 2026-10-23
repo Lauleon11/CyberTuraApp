@@ -51,8 +51,8 @@ fun World3ScreenCActivity(
 
     // Look for world3_puzzle_support resource in drawable, fallback to mundo3
     val imageResId = remember {
-        val resId = context.resources.getIdentifier("world3_puzzle_support", "drawable", context.packageName)
-        if (resId != 0) resId else R.drawable.mundo3
+        val resId = context.resources.getIdentifier("puzzle3", "drawable", context.packageName)
+        if (resId != 0) resId else R.drawable.puzzle3
     }
 
     // Crop source image into 9 real sub-bitmap pieces (3x3 grid)
@@ -187,7 +187,7 @@ fun World3ScreenCActivity(
 
             // Header Title
             Text(
-                text = "🧩 ENCIENDE LA LUZ",
+                text = "🧩 COMPLETA LA IMAGEN",
                 color = CyberCyan,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
@@ -219,7 +219,7 @@ fun World3ScreenCActivity(
                         contentScale = ContentScale.Crop
                     )
                     Text(
-                        text = if (!isPuzzleSolved) "¡Reconstruye la escena intercambiando las piezas para llevar luz a quien lo necesita!" else "¡Ahora elige las 3 acciones para protegerte y apoyar!",
+                        text = if (!isPuzzleSolved) "¡Reconstruye la escena intercambiando las piezas!" else "¡Ahora elige las 3 acciones para protegerte y apoyar!",
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 15.sp,
@@ -431,7 +431,7 @@ fun World3ScreenCActivity(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "✨ ¡ESCENA COMPLETAMENTE ILUMINADA!",
+                                text = "✨ ¡ESCENA COMPLETAMENTE CONSTRUIDA!",
                                 color = CyberSuccess,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,

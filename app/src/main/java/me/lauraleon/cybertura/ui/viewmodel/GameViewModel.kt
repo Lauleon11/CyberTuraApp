@@ -22,7 +22,6 @@ class GameViewModel @Inject constructor(
 
     private var backgroundMediaPlayer: MediaPlayer? = null
     private var currentPlayingWorld: Int? = null
-    private var resumeOnForeground = false
 
     val playerProfile: StateFlow<PlayerProfile?> = playerRepository.observePlayer()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -41,14 +40,16 @@ class GameViewModel @Inject constructor(
     fun savePlayer(nickname: String, age: Int, gender: String, costumeId: String) {
         viewModelScope.launch {
             val current = playerRepository.observePlayer().firstOrNull()
-            val profile = PlayerProfile(
-                id = 1,
+            val profile = (current ?: PlayerProfile(
                 nickname = nickname,
                 age = age,
                 gender = gender,
-                costumeId = costumeId,
-                hasPlayedIntroNarrative = current?.hasPlayedIntroNarrative ?: false,
-                score = current?.score ?: 0
+                costumeId = costumeId
+            )).copy(
+                nickname = nickname,
+                age = age,
+                gender = gender,
+                costumeId = costumeId
             )
             playerRepository.savePlayer(profile)
         }
@@ -60,6 +61,27 @@ class GameViewModel @Inject constructor(
             current?.let {
                 playerRepository.savePlayer(it.copy(hasPlayedIntroNarrative = played))
             }
+        }
+    }
+
+    fun saveRating(stars: Int, comments: String) {
+        viewModelScope.launch {
+            val current = playerRepository.observePlayer().firstOrNull()
+            val updated = current?.copy(
+                ratingStars = stars,
+                ratingComments = comments,
+                hasRated = true
+            ) ?: PlayerProfile(
+                id = 1,
+                nickname = "Jugador",
+                age = 10,
+                costumeId = "spider",
+                gender = "HOMBRE",
+                ratingStars = stars,
+                ratingComments = comments,
+                hasRated = true
+            )
+            playerRepository.savePlayer(updated)
         }
     }
 
@@ -80,9 +102,73 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    fun recordAttempt(worldNumber: Int, screen: Char) {
+        viewModelScope.launch {
+            val current = playerRepository.observePlayer().firstOrNull() ?: return@launch
+            val updated = when (worldNumber) {
+                1 -> when (screen) {
+                    'E' -> current.copy(attemptsW1E = current.attemptsW1E + 1)
+                    'F' -> current.copy(attemptsW1F = current.attemptsW1F + 1)
+                    'G' -> current.copy(attemptsW1G = current.attemptsW1G + 1)
+                    else -> current
+                }
+                2 -> when (screen) {
+                    'E' -> current.copy(attemptsW2E = current.attemptsW2E + 1)
+                    'F' -> current.copy(attemptsW2F = current.attemptsW2F + 1)
+                    'G' -> current.copy(attemptsW2G = current.attemptsW2G + 1)
+                    else -> current
+                }
+                3 -> when (screen) {
+                    'E' -> current.copy(attemptsW3E = current.attemptsW3E + 1)
+                    'F' -> current.copy(attemptsW3F = current.attemptsW3F + 1)
+                    'G' -> current.copy(attemptsW3G = current.attemptsW3G + 1)
+                    else -> current
+                }
+                4 -> when (screen) {
+                    'E' -> current.copy(attemptsW4E = current.attemptsW4E + 1)
+                    'F' -> current.copy(attemptsW4F = current.attemptsW4F + 1)
+                    'G' -> current.copy(attemptsW4G = current.attemptsW4G + 1)
+                    else -> current
+                }
+                5 -> when (screen) {
+                    'E' -> current.copy(attemptsW5E = current.attemptsW5E + 1)
+                    'F' -> current.copy(attemptsW5F = current.attemptsW5F + 1)
+                    'G' -> current.copy(attemptsW5G = current.attemptsW5G + 1)
+                    else -> current
+                }
+                else -> current
+            }
+            playerRepository.savePlayer(updated)
+        }
+    }
+
     fun completeWorld(worldId: Int) {
         viewModelScope.launch {
             worldRepository.completeWorld(worldId)
+        }
+    }
+
+    fun resetGame() {
+        viewModelScope.launch {
+            worldRepository.resetWorlds()
+            val current = playerRepository.observePlayer().firstOrNull()
+            val updated = current?.copy(
+                score = 0,
+                gamesPlayedCount = current.gamesPlayedCount + 1,
+                attemptsW1E = 0, attemptsW1F = 0, attemptsW1G = 0,
+                attemptsW2E = 0, attemptsW2F = 0, attemptsW2G = 0,
+                attemptsW3E = 0, attemptsW3F = 0, attemptsW3G = 0,
+                attemptsW4E = 0, attemptsW4F = 0, attemptsW4G = 0,
+                attemptsW5E = 0, attemptsW5F = 0, attemptsW5G = 0
+            ) ?: PlayerProfile(
+                id = 1,
+                nickname = "Jugador",
+                age = 10,
+                costumeId = "spider",
+                gender = "HOMBRE",
+                gamesPlayedCount = 1
+            )
+            playerRepository.savePlayer(updated)
         }
     }
 
@@ -111,35 +197,7 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    // Pausa sin liberar el reproductor para que la siguiente pantalla con música continúe desde el mismo punto
-    fun pauseWorldMusic() {
-        try {
-            if (backgroundMediaPlayer?.isPlaying == true) {
-                backgroundMediaPlayer?.pause()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun onAppBackground() {
-        resumeOnForeground = backgroundMediaPlayer?.isPlaying == true
-        pauseWorldMusic()
-    }
-
-    fun onAppForeground() {
-        if (resumeOnForeground) {
-            resumeOnForeground = false
-            try {
-                backgroundMediaPlayer?.start()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
     fun stopWorldMusic() {
-        resumeOnForeground = false
         try {
             backgroundMediaPlayer?.stop()
             backgroundMediaPlayer?.release()
@@ -149,6 +207,18 @@ class GameViewModel @Inject constructor(
             backgroundMediaPlayer = null
             currentPlayingWorld = null
         }
+    }
+
+    fun pauseWorldMusic() {
+        stopWorldMusic()
+    }
+
+    fun onAppBackground() {
+        stopWorldMusic()
+    }
+
+    fun onAppForeground() {
+        // no-op
     }
 
     override fun onCleared() {

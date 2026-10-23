@@ -32,16 +32,25 @@ fun World2ScreenE(
     costumeId: String = "spider",
     score: Int = 0,
     onCorrectAnswer: () -> Unit = {},
-    onSuccess: () -> Unit = {}
+    onSuccess: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var showErrorDialog by remember { mutableStateOf(false) }
     var hasAnsweredCorrectly by remember { mutableStateOf(false) }
     var showCorrectPopup by remember { mutableStateOf(false) }
 
-    LaunchedEffect(hasAnsweredCorrectly) {
-        if (hasAnsweredCorrectly) {
+    LaunchedEffect(showCorrectPopup) {
+        if (showCorrectPopup) {
+            try {
+                val mp = MediaPlayer.create(context, R.raw.fecto_de_sonido_correcto)
+                mp.start()
+                mp.setOnCompletionListener { it.release() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             delay(1500)
+            showCorrectPopup = false
             onSuccess()
         }
     }
@@ -196,12 +205,12 @@ fun World2ScreenE(
                 ) {
                     OptionButton2(
                         text = "A. 123456",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton2(
                         text = "B. futbol123",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -213,7 +222,7 @@ fun World2ScreenE(
                 ) {
                     OptionButton2(
                         text = "C. Valentina2000",
-                        onClick = { showErrorDialog = true },
+                        onClick = { showErrorDialog = true; onIncorrectAttempt() },
                         modifier = Modifier.weight(1f)
                     )
                     OptionButton2(
@@ -264,6 +273,7 @@ fun World2ScreenE(
                     .padding(24.dp),
                 contentAlignment = Alignment.Center
             ) {
+                ConfettiOverlay()
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier

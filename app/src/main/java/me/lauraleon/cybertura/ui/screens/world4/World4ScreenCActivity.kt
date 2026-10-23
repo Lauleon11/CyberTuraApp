@@ -52,8 +52,8 @@ fun World4ScreenCActivity(
 
     // Look for world4_puzzle_secret_folder resource in drawable, fallback to mundo4
     val imageResId = remember {
-        val resId = context.resources.getIdentifier("world4_puzzle_secret_folder", "drawable", context.packageName)
-        if (resId != 0) resId else R.drawable.mundo4
+        val resId = context.resources.getIdentifier("puzzle4", "drawable", context.packageName)
+        if (resId != 0) resId else R.drawable.puzzle4
     }
 
     // Crop source image into 9 real sub-bitmap pieces (3x3 grid)

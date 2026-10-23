@@ -6,4 +6,5 @@ import me.lauraleon.cybertura.domain.model.WorldState
 interface WorldRepository {
     fun observeWorlds(): Flow<List<WorldState>>
     suspend fun completeWorld(worldId: Int)
+    suspend fun resetWorlds()
 }

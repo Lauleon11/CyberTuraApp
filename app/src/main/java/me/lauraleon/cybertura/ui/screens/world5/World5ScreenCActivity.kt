@@ -52,8 +52,8 @@ fun World5ScreenCActivity(
 
     // Look for world5_puzzle_digital_footprint resource in drawable, fallback to mundo5
     val imageResId = remember {
-        val resId = context.resources.getIdentifier("world5_puzzle_digital_footprint", "drawable", context.packageName)
-        if (resId != 0) resId else R.drawable.mundo5
+        val resId = context.resources.getIdentifier("puzzle5", "drawable", context.packageName)
+        if (resId != 0) resId else R.drawable.puzzle5
     }
 
     // Crop source image into 9 real sub-bitmap pieces (3x3 grid)

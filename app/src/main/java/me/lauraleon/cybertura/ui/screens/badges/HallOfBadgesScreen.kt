@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -36,6 +37,8 @@ data class Badge(
 @Composable
 fun HallOfBadgesScreen(
     unlockedWorldMax: Int = 5,
+    completedWorldIds: Set<Int> = emptySet(),
+    onPlayAgain: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
     val badges = listOf(
@@ -97,6 +100,40 @@ fun HallOfBadgesScreen(
                 items(badges) { badge ->
                     BadgeCard(badge = badge)
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (unlockedWorldMax >= 5) {
+                Button(
+                    onClick = onPlayAgain,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .border(2.dp, CyberCyan, RoundedCornerShape(16.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(CyberBlueLight, CyberBlue)
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "VOLVER A JUGAR",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
             Spacer(modifier = Modifier.height(20.dp))

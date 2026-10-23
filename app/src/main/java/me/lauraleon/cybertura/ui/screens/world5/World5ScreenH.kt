@@ -28,7 +28,7 @@ import me.lauraleon.cybertura.ui.theme.*
 
 @Composable
 fun World5ScreenH(
-    onHallOfBadges: () -> Unit = {}
+    onRating: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var isVideoFinished by remember { mutableStateOf(false) }
@@ -83,7 +83,7 @@ fun World5ScreenH(
                 .padding(bottom = 48.dp, start = 24.dp, end = 24.dp)
         ) {
             Button(
-                onClick = onHallOfBadges,
+                onClick = onRating,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)
@@ -102,7 +102,7 @@ fun World5ScreenH(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🌀 SALÓN DE LAS INSIGNIAS",
+                        text = "⭐ CALIFICAR JUEGO",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Black,
