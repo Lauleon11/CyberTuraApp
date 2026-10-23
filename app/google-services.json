@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "16537124211",
+    "project_id": "cybertura-f1bba",
+    "storage_bucket": "cybertura-f1bba.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16537124211:android:b6ceda9dfe0124f5ea9906",
+        "android_client_info": {
+          "package_name": "me.lauraleon.cybertura"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIFm22ye_4jrOK0zFz9MATwtZZ9HejM5o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
