@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world1
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -23,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 import kotlin.math.abs
@@ -40,8 +43,41 @@ private data class WordPosition(
 
 @Composable
 fun World1ScreenAActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {},
+    onComplete: (Int, Int, Int) -> Unit = { _, _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var errorCount by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
     val targetWords = remember { listOf("PHISHING", "ENLACE", "CLAVE", "ENGAÑO", "PREMIO") }
 
     // Pre-calculated deterministic grid to ensure 100% accuracy and solvability
@@ -94,6 +130,14 @@ fun World1ScreenAActivity(
 
     val isAllFound = foundWords.size == targetWords.size
 
+    LaunchedEffect(isAllFound) {
+        if (isAllFound && !hasRewarded) {
+            hasRewarded = true
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, errorCount, totalAttempts)
+        }
+    }
+
     fun handleCellClick(row: Int, col: Int) {
         if (isAllFound) return
 
@@ -143,8 +187,21 @@ fun World1ScreenAActivity(
                 }
 
                 if (matchedWord != null) {
+                    totalAttempts++
                     foundWords.add(matchedWord)
+                    onCorrectAnswer()
+                    triggerPopup(true)
+                } else {
+                    errorCount++
+                    totalAttempts++
+                    onIncorrectAttempt()
+                    triggerPopup(false)
                 }
+            } else {
+                errorCount++
+                totalAttempts++
+                onIncorrectAttempt()
+                triggerPopup(false)
             }
 
             startCell = null
@@ -173,7 +230,30 @@ fun World1ScreenAActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
@@ -380,6 +460,47 @@ fun World1ScreenAActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

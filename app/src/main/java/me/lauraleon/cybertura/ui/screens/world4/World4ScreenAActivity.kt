@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world4
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -23,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 import kotlin.math.abs
@@ -41,15 +44,48 @@ private data class WordPosition(
 
 @Composable
 fun World4ScreenAActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {},
+    onComplete: (Int, Int, Int) -> Unit = { _, _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var errorCount by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
     val targetPositions = remember {
         listOf(
             WordPosition("PRIVACIDAD", "PRIVACIDAD", (0..9).map { col -> Pair(0, col) }),
             WordPosition("DIRECCION", "DIRECCIÓN", (1..9).map { row -> Pair(row, 0) }),
             WordPosition("TELEFONO", "TELÉFONO", (1..8).map { col -> Pair(2, col) }),
             WordPosition("DATOS", "DATOS", (3..7).map { col -> Pair(4, col) }),
-            WordPosition("CONTRASENA", "CONTRASEÑA", (0..9).map { col -> Pair(6, col) })
+            WordPosition("CONTRASEÑA", "CONTRASEÑA", (0..9).map { col -> Pair(6, col) })
         )
     }
 
@@ -93,6 +129,14 @@ fun World4ScreenAActivity(
     }
 
     val isAllFound = foundWords.size == targetWordsInternal.size
+
+    LaunchedEffect(isAllFound) {
+        if (isAllFound && !hasRewarded) {
+            hasRewarded = true
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, errorCount, totalAttempts)
+        }
+    }
 
     fun handleCellClick(row: Int, col: Int) {
         if (isAllFound) return
@@ -143,8 +187,21 @@ fun World4ScreenAActivity(
                 }
 
                 if (matchedWord != null) {
+                    totalAttempts++
                     foundWords.add(matchedWord)
+                    onCorrectAnswer()
+                    triggerPopup(true)
+                } else {
+                    errorCount++
+                    totalAttempts++
+                    onIncorrectAttempt()
+                    triggerPopup(false)
                 }
+            } else {
+                errorCount++
+                totalAttempts++
+                onIncorrectAttempt()
+                triggerPopup(false)
             }
 
             startCell = null
@@ -173,11 +230,34 @@ fun World4ScreenAActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
-                text = "📁 SOPA DE LETRAS: EL ARCHIVO PROTEGIDO",
+                text = "🛡️ SOPA DE LETRAS: DATOS PERSONALES",
                 color = CyberCyan,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
@@ -209,7 +289,7 @@ fun World4ScreenAActivity(
                         contentScale = ContentScale.Crop
                     )
                     Text(
-                        text = "¡El Espía busca tus datos personales! Encuentra las 5 palabras privadas para guardarlas de forma segura en la carpeta protegida.",
+                        text = "¡Protege tu información privada! Encuentra las 5 palabras clave sobre tus datos personales.",
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 15.sp,
@@ -220,24 +300,19 @@ fun World4ScreenAActivity(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Secret Folder Progress Indicator
+            // Progress Badge
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, if (isAllFound) CyberSuccess else CyberCyan)
+                border = BorderStroke(1.dp, CyberCyan)
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = if (isAllFound) "🔒 Carpeta Cerrada y Protegida" else "📁 Datos archivados: ${foundWords.size}/5",
-                        color = if (isAllFound) CyberSuccess else CyberCyan,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = "${foundWords.size} de ${targetPositions.size} palabras encontradas",
+                    color = CyberCyan,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -247,8 +322,8 @@ fun World4ScreenAActivity(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                targetPositions.forEach { item ->
-                    val isFound = item.internalWord in foundWords
+                targetPositions.forEach { pos ->
+                    val isFound = pos.internalWord in foundWords
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (isFound) CyberSuccess.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.4f),
@@ -259,7 +334,7 @@ fun World4ScreenAActivity(
                         modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = item.displayWord,
+                            text = pos.displayWord,
                             color = if (isFound) CyberSuccess else Color.LightGray,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -360,7 +435,7 @@ fun World4ScreenAActivity(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "🔒 ¡ARCHIVO TOTALMENTE PROTEGIDO!",
+                                text = "🔒 ¡DATOS PERSONALES PROTEGIDOS!",
                                 color = CyberSuccess,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
@@ -368,7 +443,7 @@ fun World4ScreenAActivity(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "“¡Muy bien, Guardián! Tu dirección, tu teléfono, tus contraseñas y otros datos personales son información privada. No debes compartirlos con cualquier persona por internet”.",
+                                text = "“¡Excelente trabajo, Guardián! Tu información personal es valiosa y pertenece solo a ti y a tu familia. Nunca compartas tu dirección, teléfono o datos sensibles con extraños en internet”.",
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp,
@@ -397,6 +472,47 @@ fun World4ScreenAActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

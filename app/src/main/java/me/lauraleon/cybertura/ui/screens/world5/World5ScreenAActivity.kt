@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world5
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -23,37 +24,72 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 import kotlin.math.abs
 
 private data class WordPosition(
-    val word: String,
+    val internalWord: String,
+    val displayWord: String,
     val cells: List<Pair<Int, Int>>
 )
 
 @Composable
 fun World5ScreenAActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {},
+    onComplete: (Int, Int, Int) -> Unit = { _, _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
-    val targetWords = remember { listOf("IDENTIDAD", "HUELLA", "PERFIL", "RESPETO", "SEGURIDAD") }
+    val startTime = remember { System.currentTimeMillis() }
+    var errorCount by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
 
-    // Pre-calculated deterministic grid to ensure 100% accuracy and solvability
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
     val targetPositions = remember {
         listOf(
-            WordPosition("IDENTIDAD", (1..9).map { col -> Pair(0, col) }),
-            WordPosition("HUELLA", (1..6).map { row -> Pair(row, 0) }),
-            WordPosition("SEGURIDAD", (1..9).map { idx -> Pair(idx, idx) }),
-            WordPosition("PERFIL", (1..6).map { col -> Pair(8, col) }),
-            WordPosition("RESPETO", (2..8).map { row -> Pair(row, 9) })
+            WordPosition("IDENTIDAD", "IDENTIDAD", (0..8).map { col -> Pair(0, col) }),
+            WordPosition("HUELLA", "HUELLA", (1..6).map { row -> Pair(row, 0) }),
+            WordPosition("PERFIL", "PERFIL", (1..6).map { col -> Pair(8, col) }),
+            WordPosition("RESPETO", "RESPETO", (2..8).map { row -> Pair(row, 9) }),
+            WordPosition("SEGURIDAD", "SEGURIDAD", (1..9).map { idx -> Pair(idx, idx) })
         )
     }
+
+    val targetWordsInternal = remember { targetPositions.map { it.internalWord } }
 
     // Grid letters array 10x10
     val grid = remember {
@@ -71,7 +107,7 @@ fun World5ScreenAActivity(
 
         // Place target words into grid
         targetPositions.forEach { pos ->
-            pos.word.forEachIndexed { idx, ch ->
+            pos.internalWord.forEachIndexed { idx, ch ->
                 val (r, c) = pos.cells[idx]
                 rawGrid[r][c] = ch
             }
@@ -86,13 +122,21 @@ fun World5ScreenAActivity(
     val foundCoords = remember {
         derivedStateOf {
             targetPositions
-                .filter { it.word in foundWords }
+                .filter { it.internalWord in foundWords }
                 .flatMap { it.cells }
                 .toSet()
         }
     }
 
-    val isAllFound = foundWords.size == targetWords.size
+    val isAllFound = foundWords.size == targetWordsInternal.size
+
+    LaunchedEffect(isAllFound) {
+        if (isAllFound && !hasRewarded) {
+            hasRewarded = true
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, errorCount, totalAttempts)
+        }
+    }
 
     fun handleCellClick(row: Int, col: Int) {
         if (isAllFound) return
@@ -138,13 +182,26 @@ fun World5ScreenAActivity(
                 val selectedStr = path.map { (r, c) -> grid[r][c] }.joinToString("")
                 val reverseStr = selectedStr.reversed()
 
-                val matchedWord = targetWords.firstOrNull { word ->
+                val matchedWord = targetWordsInternal.firstOrNull { word ->
                     (word == selectedStr || word == reverseStr) && word !in foundWords
                 }
 
                 if (matchedWord != null) {
+                    totalAttempts++
                     foundWords.add(matchedWord)
+                    onCorrectAnswer()
+                    triggerPopup(true)
+                } else {
+                    errorCount++
+                    totalAttempts++
+                    onIncorrectAttempt()
+                    triggerPopup(false)
                 }
+            } else {
+                errorCount++
+                totalAttempts++
+                onIncorrectAttempt()
+                triggerPopup(false)
             }
 
             startCell = null
@@ -173,7 +230,30 @@ fun World5ScreenAActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
@@ -220,24 +300,19 @@ fun World5ScreenAActivity(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Footprint Illumination Progress Indicator
+            // Progress Badge
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, if (isAllFound) CyberSuccess else CyberCyan)
+                border = BorderStroke(1.dp, CyberCyan)
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = if (isAllFound) "👣 Huella Digital Totalmente Iluminada" else "👣 Huella Digital: ${foundWords.size}/5",
-                        color = if (isAllFound) CyberSuccess else CyberCyan,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = "${foundWords.size} de ${targetPositions.size} palabras encontradas",
+                    color = CyberCyan,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -247,8 +322,8 @@ fun World5ScreenAActivity(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                targetWords.forEach { word ->
-                    val isFound = word in foundWords
+                targetPositions.forEach { pos ->
+                    val isFound = pos.internalWord in foundWords
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (isFound) CyberSuccess.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.4f),
@@ -259,7 +334,7 @@ fun World5ScreenAActivity(
                         modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = word,
+                            text = pos.displayWord,
                             color = if (isFound) CyberSuccess else Color.LightGray,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -387,7 +462,7 @@ fun World5ScreenAActivity(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Text(
-                            text = "CONTINUAR",
+                            text = "CONTINUAR A LA PANTALLA B",
                             color = Color.White,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Black
@@ -397,6 +472,47 @@ fun World5ScreenAActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

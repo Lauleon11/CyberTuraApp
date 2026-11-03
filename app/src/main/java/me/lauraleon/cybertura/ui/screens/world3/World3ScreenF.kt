@@ -314,14 +314,6 @@ fun World3ScreenF(
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "La respuesta correcta es C.",
-                        color = CyberCyan,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Una situación de ciberacoso puede incluir insultos o burlas que se repiten y buscan hacer sentir mal a otra persona.",

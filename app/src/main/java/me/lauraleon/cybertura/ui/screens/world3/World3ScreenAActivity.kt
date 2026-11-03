@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world3
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -23,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 import kotlin.math.abs
@@ -41,8 +44,41 @@ private data class WordPosition(
 
 @Composable
 fun World3ScreenAActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {},
+    onComplete: (Int, Int, Int) -> Unit = { _, _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var errorCount by remember { mutableStateOf(0) }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
     val targetPositions = remember {
         listOf(
             WordPosition("RESPETO", "RESPETO", (1..7).map { col -> Pair(0, col) }),
@@ -93,7 +129,14 @@ fun World3ScreenAActivity(
     }
 
     val isAllFound = foundWords.size == targetWordsInternal.size
-    val shadowAlpha = (0.95f - (foundWords.size * 0.15f)).coerceAtLeast(0.2f)
+
+    LaunchedEffect(isAllFound) {
+        if (isAllFound && !hasRewarded) {
+            hasRewarded = true
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, errorCount, totalAttempts)
+        }
+    }
 
     fun handleCellClick(row: Int, col: Int) {
         if (isAllFound) return
@@ -144,8 +187,21 @@ fun World3ScreenAActivity(
                 }
 
                 if (matchedWord != null) {
+                    totalAttempts++
                     foundWords.add(matchedWord)
+                    onCorrectAnswer()
+                    triggerPopup(true)
+                } else {
+                    errorCount++
+                    totalAttempts++
+                    onIncorrectAttempt()
+                    triggerPopup(false)
                 }
+            } else {
+                errorCount++
+                totalAttempts++
+                onIncorrectAttempt()
+                triggerPopup(false)
             }
 
             startCell = null
@@ -167,7 +223,6 @@ fun World3ScreenAActivity(
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.6f))
         )
-        // Dynamic background glow/illumination as words are found
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -183,7 +238,30 @@ fun World3ScreenAActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
@@ -199,7 +277,7 @@ fun World3ScreenAActivity(
             // Guide Cat Message Box
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = shadowAlpha),
+                color = Color.Black.copy(alpha = 0.8f),
                 border = BorderStroke(1.dp, CyberCyan)
             ) {
                 Row(
@@ -219,7 +297,7 @@ fun World3ScreenAActivity(
                         contentScale = ContentScale.Crop
                     )
                     Text(
-                        text = "¡El Troll intenta oscurecer el valle con comentarios ofensivos! Encuentra las 5 palabras para encender la luz y disipar las sombras.",
+                        text = "¡Las sombras de los Ciberacosadores intentan apagar la luz! Encuentra las 5 palabras de luz y respeto para iluminar el ciberespacio.",
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 15.sp,
@@ -230,29 +308,19 @@ fun World3ScreenAActivity(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Progress & Light Level Badge
+            // Progress Badge
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.8f),
                 border = BorderStroke(1.dp, CyberCyan)
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "✨ Luz: ${foundWords.size}/5",
-                        color = CyberCyan,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "• ${foundWords.size} de ${targetWordsInternal.size} palabras",
-                        color = Color.LightGray,
-                        fontSize = 12.sp
-                    )
-                }
+                Text(
+                    text = "${foundWords.size} de ${targetPositions.size} palabras de luz encontradas",
+                    color = CyberCyan,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -262,8 +330,8 @@ fun World3ScreenAActivity(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
-                targetPositions.forEach { item ->
-                    val isFound = item.internalWord in foundWords
+                targetPositions.forEach { pos ->
+                    val isFound = pos.internalWord in foundWords
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = if (isFound) CyberSuccess.copy(alpha = 0.2f) else Color.DarkGray.copy(alpha = 0.4f),
@@ -274,7 +342,7 @@ fun World3ScreenAActivity(
                         modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = item.displayWord,
+                            text = pos.displayWord,
                             color = if (isFound) CyberSuccess else Color.LightGray,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
@@ -375,7 +443,7 @@ fun World3ScreenAActivity(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "✨ ¡LAS SOMBRAS HAN DESAPARECIDO!",
+                                text = "✨ ¡LUZ RESTAURADA EN EL CIBERESPACIO!",
                                 color = CyberSuccess,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
@@ -383,7 +451,7 @@ fun World3ScreenAActivity(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "“¡Muy bien, Guardián! Todos merecemos respeto, también en internet. Si alguien está sufriendo por mensajes ofensivos, podemos ayudar sin responder con más insultos”.",
+                                text = "“¡Increíble labor, Guardián! Has encontrado todas las palabras de respeto. Recuerda que el trato amable, la empatía y reportar cualquier situación de ciberacoso hacen que internet sea un lugar seguro para todos”.",
                                 color = Color.White,
                                 fontSize = 12.sp,
                                 lineHeight = 16.sp,
@@ -412,6 +480,47 @@ fun World3ScreenAActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

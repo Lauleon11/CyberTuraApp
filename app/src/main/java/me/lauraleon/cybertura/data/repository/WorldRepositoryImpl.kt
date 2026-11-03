@@ -31,16 +31,23 @@ class WorldRepositoryImpl @Inject constructor(
                     world.id == 1 -> WorldStatus.UNLOCKED
                     else -> WorldStatus.LOCKED
                 }
-                val progress = entity?.toDomain() ?: WorldProgress(world.id, status)
+                val progress = entity?.toDomain() ?: WorldProgress(
+                    worldId = world.id,
+                    status = status,
+                    completedAt = null,
+                    currentScreen = "A"
+                )
                 WorldState(world, progress.copy(status = status))
             }
         }
 
     override suspend fun completeWorld(worldId: Int) {
+        val existing = worldProgressDao.getByWorld(worldId)
         val completedEntity = WorldProgressEntity(
             worldId = worldId,
             status = WorldStatus.COMPLETED.name,
-            completedAt = System.currentTimeMillis()
+            completedAt = System.currentTimeMillis(),
+            currentScreen = existing?.currentScreen ?: "H"
         )
         worldProgressDao.upsert(completedEntity)
 
@@ -49,7 +56,8 @@ class WorldRepositoryImpl @Inject constructor(
             WorldProgressEntity(
                 worldId = it.id,
                 status = WorldStatus.UNLOCKED.name,
-                completedAt = null
+                completedAt = null,
+                currentScreen = "A"
             )
         }
 
@@ -71,12 +79,35 @@ class WorldRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateWorldScreen(worldId: Int, screen: String) {
+        val existing = worldProgressDao.getByWorld(worldId)
+        val updatedEntity = if (existing != null) {
+            existing.copy(currentScreen = screen)
+        } else {
+            WorldProgressEntity(
+                worldId = worldId,
+                status = WorldStatus.UNLOCKED.name,
+                completedAt = null,
+                currentScreen = screen
+            )
+        }
+        worldProgressDao.upsert(updatedEntity)
+
+        try {
+            val playerDoc = firestore.collection("players").document("1")
+            playerDoc.collection("worlds").document(worldId.toString()).set(updatedEntity).await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     override suspend fun resetWorlds() {
         worldProgressDao.deleteAll()
         val world1Entity = WorldProgressEntity(
             worldId = 1,
             status = WorldStatus.UNLOCKED.name,
-            completedAt = null
+            completedAt = null,
+            currentScreen = "A"
         )
         worldProgressDao.upsert(world1Entity)
 
@@ -88,7 +119,8 @@ class WorldRepositoryImpl @Inject constructor(
                 val lockedEntity = WorldProgressEntity(
                     worldId = id,
                     status = WorldStatus.LOCKED.name,
-                    completedAt = null
+                    completedAt = null,
+                    currentScreen = "A"
                 )
                 batch.set(playerDoc.collection("worlds").document(id.toString()), lockedEntity)
             }
@@ -102,5 +134,6 @@ class WorldRepositoryImpl @Inject constructor(
 private fun WorldProgressEntity.toDomain() = WorldProgress(
     worldId = worldId,
     status = WorldStatus.valueOf(status),
-    completedAt = completedAt
+    completedAt = completedAt,
+    currentScreen = currentScreen
 )

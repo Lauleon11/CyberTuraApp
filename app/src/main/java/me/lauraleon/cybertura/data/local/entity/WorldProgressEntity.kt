@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class WorldProgressEntity(
     @PrimaryKey val worldId: Int,
     val status: String,
-    val completedAt: Long?
+    val completedAt: Long?,
+    val currentScreen: String = "A"
 )

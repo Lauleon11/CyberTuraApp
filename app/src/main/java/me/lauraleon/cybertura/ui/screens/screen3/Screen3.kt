@@ -42,8 +42,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import android.media.MediaPlayer
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 
 @Composable
@@ -56,45 +58,65 @@ fun Screen3(
     onWorldClick: (World) -> Unit = {},
     onBadgesClick: () -> Unit = {}
 ) {
-    var showNarrative by remember { mutableStateOf(!hasPlayedIntroNarrative) }
+    var showNarrative by rememberSaveable { mutableStateOf(!hasPlayedIntroNarrative) }
     val context = LocalContext.current
+    var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
 
-    LaunchedEffect(hasPlayedIntroNarrative) {
-        if (hasPlayedIntroNarrative) {
-            showNarrative = false
+    // Release the player if Screen3 leaves the composition (for example when the
+    // user enters a world) so the narration is never left running or leaked.
+    DisposableEffect(Unit) {
+        onDispose {
+            try {
+                mediaPlayer?.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                mediaPlayer = null
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        if (!hasPlayedIntroNarrative) {
-            try {
-                val resId = context.resources.getIdentifier("narrativa_inicio", "raw", context.packageName)
-                if (resId != 0) {
-                    val mediaPlayer = MediaPlayer.create(context, resId)
-                    mediaPlayer.start()
-                    var audioFinished = false
-                    mediaPlayer.setOnCompletionListener {
-                        it.release()
-                        audioFinished = true
+        if (hasPlayedIntroNarrative) {
+            showNarrative = false
+            return@LaunchedEffect
+        }
+
+        // Register the narration as consumed immediately. The session flag in the
+        // ViewModel keeps this true while navigating, even if the user leaves
+        // before the audio ends. The local state keeps the message visible until
+        // playback finishes.
+        onNarrativePlayed()
+
+        try {
+            val resId = context.resources.getIdentifier("narrativa_inicio", "raw", context.packageName)
+            if (resId != 0) {
+                val player = MediaPlayer.create(context.applicationContext, resId)
+                if (player != null) {
+                    mediaPlayer = player
+                    val finished = CompletableDeferred<Unit>()
+                    player.setOnCompletionListener {
+                        try {
+                            it.release()
+                        } finally {
+                            if (mediaPlayer === it) mediaPlayer = null
+                            finished.complete(Unit)
+                        }
                     }
-                    
-                    while (!audioFinished) {
-                        delay(500)
-                    }
-                    
-                    delay(2000)
-                    showNarrative = false
-                    onNarrativePlayed()
+                    player.start()
+                    finished.await()
                 } else {
                     delay(15000)
-                    showNarrative = false
-                    onNarrativePlayed()
                 }
-            } catch (e: Exception) {
-                delay(5000)
-                showNarrative = false
-                onNarrativePlayed()
+            } else {
+                delay(15000)
             }
+            delay(2000)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            delay(5000)
+        } finally {
+            showNarrative = false
         }
     }
 
@@ -155,7 +177,7 @@ fun Screen3(
                             .border(2.dp, CyberCyan, CircleShape)
                     ) {
                         Image(
-                            painter = painterResource(id = R.drawable.mundo1),
+                            painter = painterResource(id = R.drawable.insignias),
                             contentDescription = "Insignias",
                             modifier = Modifier
                                 .size(36.dp)
@@ -272,7 +294,7 @@ fun WorldButton(
         else -> R.drawable.mundo1
     }
 
-    val isClickable = !isLocked && !isCompleted
+    val isClickable = !isLocked
 
     Card(
         modifier = modifier

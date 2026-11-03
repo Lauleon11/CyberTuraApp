@@ -2,6 +2,7 @@ package me.lauraleon.cybertura.ui.screens.world1
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -33,14 +34,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 
 @Composable
 fun World1ScreenCActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onComplete: (Int, Int) -> Unit = { _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var moveCount by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
     val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
 
     // Look for world1_puzzle_message resource in drawable, fallback to mundo1
     val imageResId = remember {
@@ -88,9 +119,18 @@ fun World1ScreenCActivity(
         }
     }
 
+    LaunchedEffect(isSolved) {
+        if (isSolved && !hasRewarded) {
+            hasRewarded = true
+            onCorrectAnswer()
+            triggerPopup(true)
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, moveCount)
+        }
+    }
+
     fun restartPuzzle() {
         currentGrid.clear()
-        // Deterministic shuffle that is solvable
         currentGrid.addAll(listOf(2, 5, 0, 7, 4, 1, 8, 3, 6))
         selectedIndex = null
     }
@@ -104,10 +144,10 @@ fun World1ScreenCActivity(
         } else if (selected == clickedGridIndex) {
             selectedIndex = null
         } else {
-            // Swap pieces in grid
             val temp = currentGrid[selected]
             currentGrid[selected] = currentGrid[clickedGridIndex]
             currentGrid[clickedGridIndex] = temp
+            moveCount++
             selectedIndex = null
         }
     }
@@ -133,7 +173,30 @@ fun World1ScreenCActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
@@ -143,10 +206,6 @@ fun World1ScreenCActivity(
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -182,7 +241,6 @@ fun World1ScreenCActivity(
                     .padding(8.dp)
             ) {
                 if (isSolved) {
-                    // Show Full Unbroken Complete Image when solved
                     Image(
                         painter = painterResource(id = imageResId),
                         contentDescription = "Imagen Completa",
@@ -228,7 +286,6 @@ fun World1ScreenCActivity(
                                                 contentScale = ContentScale.Crop
                                             )
                                         } else {
-                                            // Fallback text if bitmap fails
                                             Text(
                                                 text = "${originalPieceId + 1}",
                                                 color = CyberCyan,
@@ -291,6 +348,47 @@ fun World1ScreenCActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

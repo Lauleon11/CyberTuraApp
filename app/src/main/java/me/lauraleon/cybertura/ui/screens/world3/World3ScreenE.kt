@@ -313,14 +313,6 @@ fun World3ScreenE(
                         fontWeight = FontWeight.Black,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "La respuesta correcta es C.",
-                        color = CyberCyan,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Responder con más agresiones puede empeorar la situación. Es mejor guardar evidencia, bloquear, reportar y buscar ayuda.",

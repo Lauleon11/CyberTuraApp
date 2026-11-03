@@ -2,6 +2,7 @@ package me.lauraleon.cybertura.ui.screens.world5
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -33,30 +34,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 
-private data class PostItem(
-    val id: Int,
-    val title: String,
-    val text: String,
-    val correctCategory: Int, // 1: Conviene pensarlo mejor, 2: Publicación apropiada
-    val feedback: String
-)
-
 @Composable
 fun World5ScreenCActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onComplete: (Int, Int) -> Unit = { _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var moveCount by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
     val context = LocalContext.current
 
-    // Look for world5_puzzle_digital_footprint resource in drawable, fallback to mundo5
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
     val imageResId = remember {
         val resId = context.resources.getIdentifier("puzzle5", "drawable", context.packageName)
         if (resId != 0) resId else R.drawable.puzzle5
     }
 
-    // Crop source image into 9 real sub-bitmap pieces (3x3 grid)
     val pieceBitmaps = remember(imageResId) {
         try {
             val options = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
@@ -81,7 +102,6 @@ fun World5ScreenCActivity(
         }
     }
 
-    // Initial shuffled state guaranteed not solved
     val solvedList = remember { (0..8).toList() }
     val initialGrid = remember {
         listOf(2, 5, 0, 7, 4, 1, 8, 3, 6)
@@ -96,66 +116,13 @@ fun World5ScreenCActivity(
         }
     }
 
-    // Phase 2 Social Posts to analyze
-    val postsList = remember {
-        listOf(
-            PostItem(
-                1,
-                "Publicación 1 — Ubicación exacta",
-                "“¡Estoy solo en casa! Esta es mi dirección y pueden venir cuando quieran.”",
-                1,
-                "Publicar tu dirección y decir que estás solo puede poner en riesgo tu seguridad. Evita compartir tu ubicación exacta públicamente."
-            ),
-            PostItem(
-                2,
-                "Publicación 2 — Compartir contraseña",
-                "“Esta es mi contraseña para que todos puedan entrar a mi cuenta.”",
-                1,
-                "Las contraseñas son privadas. Nunca las publiques ni las compartas con otras personas."
-            ),
-            PostItem(
-                3,
-                "Publicación 3 — Foto de otra persona sin permiso",
-                "“Voy a publicar esta foto de mi compañero para que todos se rían.”",
-                1,
-                "Antes de publicar una fotografía de otra persona, respeta su privacidad y pide su permiso. No compartas contenido para burlarte de alguien."
-            ),
-            PostItem(
-                4,
-                "Publicación 4 — Afición general",
-                "“Me gusta dibujar, pintar y jugar videojuegos.”",
-                2,
-                "Compartir tus gustos puede estar bien si no incluyes datos personales que permitan localizarte o identificarte de forma insegura."
-            ),
-            PostItem(
-                5,
-                "Publicación 5 — Consejo de seguridad",
-                "“Recuerda verificar los perfiles antes de confiar en ellos.”",
-                2,
-                "Compartir consejos de seguridad puede ayudar a otras personas a protegerse en internet."
-            ),
-            PostItem(
-                6,
-                "Publicación 6 — Logro creativo",
-                "“¡Terminé un dibujo que me tomó toda la tarde! Me encanta cómo quedó.”",
-                2,
-                "Compartir tus creaciones puede ser positivo. Antes de publicar una imagen, revisa que no muestre tu dirección, documentos, ubicación u otros datos privados."
-            )
-        )
-    }
-
-    val classifiedPostMap = remember { mutableStateMapOf<Int, Int>() } // PostId -> SelectedCategory
-    val feedbackMap = remember { mutableStateMapOf<Int, String>() }
-
-    val isAllPostsClassified by remember {
-        derivedStateOf {
-            postsList.all { post -> classifiedPostMap[post.id] == post.correctCategory }
-        }
-    }
-
-    val isFullyCompleted by remember {
-        derivedStateOf {
-            isPuzzleSolved && isAllPostsClassified
+    LaunchedEffect(isPuzzleSolved) {
+        if (isPuzzleSolved && !hasRewarded) {
+            hasRewarded = true
+            onCorrectAnswer()
+            triggerPopup(true)
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, moveCount)
         }
     }
 
@@ -163,8 +130,6 @@ fun World5ScreenCActivity(
         currentGrid.clear()
         currentGrid.addAll(listOf(2, 5, 0, 7, 4, 1, 8, 3, 6))
         selectedIndex = null
-        classifiedPostMap.clear()
-        feedbackMap.clear()
     }
 
     fun handlePieceClick(clickedGridIndex: Int) {
@@ -179,17 +144,8 @@ fun World5ScreenCActivity(
             val temp = currentGrid[selected]
             currentGrid[selected] = currentGrid[clickedGridIndex]
             currentGrid[clickedGridIndex] = temp
+            moveCount++
             selectedIndex = null
-        }
-    }
-
-    fun handleClassifyPost(postId: Int, categoryChosen: Int) {
-        val post = postsList.firstOrNull { it.id == postId } ?: return
-        if (post.correctCategory == categoryChosen) {
-            classifiedPostMap[postId] = categoryChosen
-            feedbackMap[postId] = "✅ ${post.feedback}"
-        } else {
-            feedbackMap[postId] = "⚠️ Esta publicación debe evaluarse con más cuidado. Lee de nuevo el mensaje e inténtalo."
         }
     }
 
@@ -214,50 +170,39 @@ fun World5ScreenCActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
-                text = "🧩 RECONSTRUYE TU HUELLA DIGITAL",
+                text = "🧩 RECONSTRUYE LA IMAGEN",
                 color = CyberCyan,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Guide Cat Message Box
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, CyberCyan)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.gato_guia),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, CyberCyan, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = if (!isPuzzleSolved) "¡Arma el perfil seguro intercambiando las piezas para proteger la huella digital!" else "¡Ahora analiza las 6 publicaciones para evaluar la huella digital que dejamos!",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -270,7 +215,7 @@ fun World5ScreenCActivity(
                 modifier = Modifier.height(40.dp)
             ) {
                 Text(
-                    text = "🔄 REINICIAR ACTIVIDAD",
+                    text = "🔄 REINICIAR ROMPECABEZAS",
                     color = CyberCyan,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -279,7 +224,7 @@ fun World5ScreenCActivity(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3x3 Puzzle Grid Container (Phase 1)
+            // 3x3 Puzzle Grid Container
             Box(
                 modifier = Modifier
                     .aspectRatio(1f)
@@ -293,10 +238,9 @@ fun World5ScreenCActivity(
                     .padding(8.dp)
             ) {
                 if (isPuzzleSolved) {
-                    // Show Full Unbroken Complete Image when solved
                     Image(
                         painter = painterResource(id = imageResId),
-                        contentDescription = "Perfil Seguro Completo",
+                        contentDescription = "Imagen Completa",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp)),
@@ -356,137 +300,9 @@ fun World5ScreenCActivity(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Phase 2: Post Analysis Activity
-            if (isPuzzleSolved) {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Black.copy(alpha = 0.85f),
-                    border = BorderStroke(1.5.dp, CyberCyan),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "“¡Muy bien, Guardián! Has reconstruido un perfil protegido. Ahora vamos a descubrir qué publicaciones conviene pensar dos veces antes de compartir.”",
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Progress Indicator
-                        val correctCount = postsList.count { classifiedPostMap[it.id] == it.correctCategory }
-                        Text(
-                            text = "Publicaciones analizadas correctamente: $correctCount de ${postsList.size}",
-                            color = CyberCyan,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // 6 Posts Evaluation Cards
-                        postsList.forEach { post ->
-                            val currentChoice = classifiedPostMap[post.id]
-                            val isCorrect = currentChoice == post.correctCategory
-                            val feedback = feedbackMap[post.id]
-
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (isCorrect) CyberSuccess.copy(alpha = 0.15f) else Color(0xFF1E1035),
-                                border = BorderStroke(
-                                    1.5.dp,
-                                    if (isCorrect) CyberSuccess else CyberViolet
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Text(
-                                        text = if (isCorrect) "✅ ${post.title}" else "📱 ${post.title}",
-                                        color = if (isCorrect) CyberSuccess else CyberCyan,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-
-                                    Spacer(modifier = Modifier.height(3.dp))
-
-                                    Text(
-                                        text = post.text,
-                                        color = Color.White,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        lineHeight = 14.sp
-                                    )
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    // Option Buttons
-                                    if (!isCorrect) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            Button(
-                                                onClick = { handleClassifyPost(post.id, 1) },
-                                                colors = ButtonDefaults.buttonColors(containerColor = CyberViolet),
-                                                border = BorderStroke(1.dp, CyberMagenta),
-                                                shape = RoundedCornerShape(10.dp),
-                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
-                                                modifier = Modifier.weight(1f).height(38.dp)
-                                            ) {
-                                                Text(
-                                                    text = "⚠️ Pensarlo mejor",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-
-                                            Button(
-                                                onClick = { handleClassifyPost(post.id, 2) },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E1035)),
-                                                border = BorderStroke(1.dp, CyberSuccess),
-                                                shape = RoundedCornerShape(10.dp),
-                                                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp),
-                                                modifier = Modifier.weight(1f).height(38.dp)
-                                            ) {
-                                                Text(
-                                                    text = "✅ Publicación apropiada",
-                                                    fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    // Feedback message
-                                    feedback?.let { msg ->
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Text(
-                                            text = msg,
-                                            color = if (isCorrect) CyberSuccess else CyberDanger,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            lineHeight = 14.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Completion Banner & Final Educational Message
+            // Completion Banner & Continuation Button
             AnimatedVisibility(
-                visible = isFullyCompleted,
+                visible = isPuzzleSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -494,33 +310,19 @@ fun World5ScreenCActivity(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = CyberSuccess.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(12.dp),
+                        color = CyberSuccess.copy(alpha = 0.2f),
                         border = BorderStroke(1.5.dp, CyberSuccess),
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(14.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "✨ ¡HUELLA DIGITAL TOTALMENTE PROTEGIDA!",
-                                color = CyberSuccess,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "“¡Lo lograste, Guardián! Todo lo que publicamos puede dejar una huella digital. Antes de compartir una foto, un comentario o información personal, piensa quién podrá verlo y cómo podría afectar tu privacidad o la de otras personas. Recuerda que el contenido puede permanecer en internet incluso después de eliminarlo. ¡Publica con responsabilidad!”",
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = "🎉 ¡RECONSTRUIDO CON ÉXITO!",
+                            color = CyberSuccess,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(12.dp)
+                        )
                     }
 
                     Button(
@@ -543,6 +345,47 @@ fun World5ScreenCActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

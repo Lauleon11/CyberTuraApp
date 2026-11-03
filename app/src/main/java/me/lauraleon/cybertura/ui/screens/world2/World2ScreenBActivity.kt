@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world2
 
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -23,27 +24,60 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 
 @Composable
 fun World2ScreenBActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onIncorrectAttempt: () -> Unit = {},
+    onComplete: (Int, Int, Int) -> Unit = { _, _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
-    val internalTarget = "CONTRASENA"
-    val displayTarget = "CONTRASEÑA"
-    val hint = "Es una combinación secreta que utilizas para proteger tus cuentas."
+    val startTime = remember { System.currentTimeMillis() }
+    var totalAttempts by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
+
+    val targetWord = "CONTRASEÑA"
+    val hint = "Es una combinación de letras, números o símbolos que protege tus cuentas."
 
     val guessedLetters = remember { mutableStateListOf<Char>() }
 
     val incorrectCount by remember {
         derivedStateOf {
-            guessedLetters.count { it !in internalTarget && !(it == 'Ñ' && 'N' in internalTarget) }
+            guessedLetters.count { it !in targetWord }
         }
     }
 
@@ -52,9 +86,7 @@ fun World2ScreenBActivity(
 
     val isWordSolved by remember {
         derivedStateOf {
-            internalTarget.all { ch ->
-                ch in guessedLetters || (ch == 'N' && 'Ñ' in guessedLetters)
-            }
+            targetWord.all { it in guessedLetters }
         }
     }
 
@@ -64,13 +96,28 @@ fun World2ScreenBActivity(
         }
     }
 
+    LaunchedEffect(isWordSolved) {
+        if (isWordSolved && !hasRewarded) {
+            hasRewarded = true
+            onCorrectAnswer()
+            triggerPopup(true)
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, incorrectCount, totalAttempts)
+        }
+    }
+
     fun restartCurrentWord() {
         guessedLetters.clear()
     }
 
     fun handleLetterClick(letter: Char) {
         if (letter !in guessedLetters && !isWordSolved && !isGameOver) {
+            totalAttempts++
             guessedLetters.add(letter)
+            if (letter !in targetWord) {
+                onIncorrectAttempt()
+                triggerPopup(false)
+            }
         }
     }
 
@@ -85,7 +132,7 @@ fun World2ScreenBActivity(
         modifier = Modifier.fillMaxSize()
     ) {
         Image(
-            painter = painterResource(id = R.drawable.mundo2),
+            painter = painterResource(id = R.drawable.background_world2),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -102,7 +149,30 @@ fun World2ScreenBActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
@@ -191,9 +261,8 @@ fun World2ScreenBActivity(
                     .fillMaxWidth()
                     .padding(vertical = 12.dp)
             ) {
-                displayTarget.forEachIndexed { idx, letter ->
-                    val internalChar = internalTarget[idx]
-                    val isRevealed = internalChar in guessedLetters || (internalChar == 'N' && 'Ñ' in guessedLetters)
+                targetWord.forEach { letter ->
+                    val isRevealed = letter in guessedLetters
 
                     Box(
                         modifier = Modifier
@@ -234,7 +303,7 @@ fun World2ScreenBActivity(
                     ) {
                         rowLetters.forEach { letter ->
                             val isUsed = letter in guessedLetters
-                            val isCorrect = isUsed && (letter in internalTarget || (letter == 'Ñ' && 'N' in internalTarget))
+                            val isCorrect = isUsed && letter in targetWord
 
                             val buttonBg = when {
                                 !isUsed -> Color(0xFF2A164D)
@@ -289,7 +358,7 @@ fun World2ScreenBActivity(
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
                         Text(
-                            text = "❌ ¡Rompeclaves debilitó la cerradura! La palabra era: $displayTarget",
+                            text = "❌ ¡Rompeclaves debilitó la cerradura! La palabra era: $targetWord",
                             color = CyberDanger,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
@@ -358,6 +427,47 @@ fun World2ScreenBActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }

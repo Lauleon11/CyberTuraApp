@@ -2,6 +2,7 @@ package me.lauraleon.cybertura.ui.screens.world3
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaPlayer
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -33,21 +34,44 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import me.lauraleon.cybertura.R
 import me.lauraleon.cybertura.ui.theme.*
 
-private data class EducationalAction(
-    val id: Int,
-    val title: String,
-    val description: String,
-    val feedback: String
-)
-
 @Composable
 fun World3ScreenCActivity(
+    score: Int = 0,
+    onCorrectAnswer: () -> Unit = {},
+    onComplete: (Int, Int) -> Unit = { _, _ -> },
     onNextClick: () -> Unit = {}
 ) {
+    val startTime = remember { System.currentTimeMillis() }
+    var moveCount by remember { mutableStateOf(0) }
+    var hasRewarded by remember { mutableStateOf(false) }
+
+    var popupMessage by remember { mutableStateOf<String?>(null) }
+    var isPopupCorrect by remember { mutableStateOf(true) }
     val context = LocalContext.current
+
+    fun triggerPopup(correct: Boolean) {
+        isPopupCorrect = correct
+        popupMessage = if (correct) "+10 PUNTOS" else "-5 PUNTOS"
+        try {
+            val soundRes = if (correct) R.raw.fecto_de_sonido_correcto else R.raw.respuesta_incorrecta
+            val mp = MediaPlayer.create(context, soundRes)
+            mp.start()
+            mp.setOnCompletionListener { it.release() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    LaunchedEffect(popupMessage) {
+        if (popupMessage != null) {
+            delay(1300)
+            popupMessage = null
+        }
+    }
 
     // Look for world3_puzzle_support resource in drawable, fallback to mundo3
     val imageResId = remember {
@@ -95,40 +119,13 @@ fun World3ScreenCActivity(
         }
     }
 
-    // Educational actions post puzzle
-    val educationalActions = remember {
-        listOf(
-            EducationalAction(
-                1,
-                "Opción 1 — Guardar pruebas",
-                "Guardar capturas de los mensajes para mostrar lo ocurrido.",
-                "Las pruebas pueden ayudar a explicar la situación a un adulto de confianza."
-            ),
-            EducationalAction(
-                2,
-                "Opción 2 — Bloquear y reportar",
-                "Bloquear al agresor y reportar los mensajes en la plataforma.",
-                "Bloquear y reportar puede ayudar a detener el contacto y avisar a la plataforma."
-            ),
-            EducationalAction(
-                3,
-                "Opción 3 — Contarle a un adulto de confianza",
-                "Hablar con un familiar, profesor u otro adulto de confianza.",
-                "No tienes que resolverlo a solas. Un adulto de confianza puede ayudarte a decidir qué hacer."
-            )
-        )
-    }
-
-    val selectedActionIds = remember { mutableStateListOf<Int>() }
-    val isAllActionsCompleted by remember {
-        derivedStateOf {
-            selectedActionIds.size == educationalActions.size
-        }
-    }
-
-    val isFullyCompleted by remember {
-        derivedStateOf {
-            isPuzzleSolved && isAllActionsCompleted
+    LaunchedEffect(isPuzzleSolved) {
+        if (isPuzzleSolved && !hasRewarded) {
+            hasRewarded = true
+            onCorrectAnswer()
+            triggerPopup(true)
+            val elapsedSeconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+            onComplete(elapsedSeconds, moveCount)
         }
     }
 
@@ -136,7 +133,6 @@ fun World3ScreenCActivity(
         currentGrid.clear()
         currentGrid.addAll(listOf(2, 5, 0, 7, 4, 1, 8, 3, 6))
         selectedIndex = null
-        selectedActionIds.clear()
     }
 
     fun handlePieceClick(clickedGridIndex: Int) {
@@ -148,17 +144,11 @@ fun World3ScreenCActivity(
         } else if (selected == clickedGridIndex) {
             selectedIndex = null
         } else {
-            // Swap pieces in grid
             val temp = currentGrid[selected]
             currentGrid[selected] = currentGrid[clickedGridIndex]
             currentGrid[clickedGridIndex] = temp
+            moveCount++
             selectedIndex = null
-        }
-    }
-
-    fun toggleAction(actionId: Int) {
-        if (actionId !in selectedActionIds) {
-            selectedActionIds.add(actionId)
         }
     }
 
@@ -183,50 +173,39 @@ fun World3ScreenCActivity(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(36.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Dedicated Top Bar Row with Score Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.Black.copy(alpha = 0.75f),
+                    border = BorderStroke(1.5.dp, CyberCyan)
+                ) {
+                    Text(
+                        text = "⭐ $score Pts",
+                        color = CyberCyan,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Header Title
             Text(
-                text = "🧩 COMPLETA LA IMAGEN",
+                text = "🧩 RECONSTRUYE LA IMAGEN",
                 color = CyberCyan,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Guide Cat Message Box
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = Color.Black.copy(alpha = 0.8f),
-                border = BorderStroke(1.dp, CyberCyan)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.gato_guia),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(50.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, CyberCyan, CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                    Text(
-                        text = if (!isPuzzleSolved) "¡Reconstruye la escena intercambiando las piezas!" else "¡Ahora elige las 3 acciones para protegerte y apoyar!",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -262,10 +241,9 @@ fun World3ScreenCActivity(
                     .padding(8.dp)
             ) {
                 if (isPuzzleSolved) {
-                    // Show Full Unbroken Complete Image when solved
                     Image(
                         painter = painterResource(id = imageResId),
-                        contentDescription = "Escena de Apoyo Completa",
+                        contentDescription = "Imagen Completa",
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp)),
@@ -325,95 +303,9 @@ fun World3ScreenCActivity(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Post-puzzle Interactive Educational Activity
-            if (isPuzzleSolved) {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Black.copy(alpha = 0.85f),
-                    border = BorderStroke(1.5.dp, CyberCyan),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "“¡Lo lograste, Guardián! Ahora puedes ayudar a alguien que está sufriendo por mensajes ofensivos. ¿Qué acciones podemos tomar para protegernos y ayudar?”",
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            lineHeight = 16.sp,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Progress Indicator
-                        Text(
-                            text = "Acciones correctas: ${selectedActionIds.size} de ${educationalActions.size}",
-                            color = CyberCyan,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // 3 Interactive Action Option Cards
-                        educationalActions.forEach { action ->
-                            val isSelected = action.id in selectedActionIds
-
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = if (isSelected) CyberSuccess.copy(alpha = 0.2f) else Color(0xFF1E1035),
-                                border = BorderStroke(
-                                    1.5.dp,
-                                    if (isSelected) CyberSuccess else CyberViolet
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .clickable { toggleAction(action.id) }
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = if (isSelected) "✅ ${action.title}" else "⚪ ${action.title}",
-                                            color = if (isSelected) CyberSuccess else CyberCyan,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    Text(
-                                        text = action.description,
-                                        color = Color.White,
-                                        fontSize = 12.sp,
-                                        lineHeight = 15.sp
-                                    )
-
-                                    if (isSelected) {
-                                        Spacer(modifier = Modifier.height(6.dp))
-                                        Text(
-                                            text = "💡 ${action.feedback}",
-                                            color = CyberSuccess,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            lineHeight = 14.sp
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
             // Completion Banner & Continuation Button
             AnimatedVisibility(
-                visible = isFullyCompleted,
+                visible = isPuzzleSolved,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
             ) {
                 Column(
@@ -421,33 +313,19 @@ fun World3ScreenCActivity(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        color = CyberSuccess.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(12.dp),
+                        color = CyberSuccess.copy(alpha = 0.2f),
                         border = BorderStroke(1.5.dp, CyberSuccess),
                         modifier = Modifier.padding(bottom = 12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(14.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "✨ ¡ESCENA COMPLETAMENTE CONSTRUIDA!",
-                                color = CyberSuccess,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Black,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = "“¡Excelente, Guardián! Ayudar no significa pelear. Puedes guardar pruebas, bloquear y reportar, y contarle a un adulto de confianza. Tratar a los demás con respeto también es una forma de protegerlos”.",
-                                color = Color.White,
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        Text(
+                            text = "🎉 ¡RECONSTRUIDO CON ÉXITO!",
+                            color = CyberSuccess,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(12.dp)
+                        )
                     }
 
                     Button(
@@ -470,6 +348,47 @@ fun World3ScreenCActivity(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        // Floating Score Popup Overlay
+        if (popupMessage != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isPopupCorrect) {
+                    ConfettiOverlay()
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = CyberBackground,
+                    border = BorderStroke(2.dp, if (isPopupCorrect) CyberSuccess else CyberDanger)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (isPopupCorrect) "🎉 ¡CORRECTO!" else "❌ ¡INCORRECTO!",
+                            color = if (isPopupCorrect) CyberSuccess else CyberDanger,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = popupMessage!!,
+                            color = if (isPopupCorrect) Color.Yellow else Color.Red,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Black,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }
