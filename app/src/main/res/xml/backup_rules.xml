@@ -6,8 +6,6 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- Each installation needs its own id, so a restored device never shares a Firestore document. -->
+    <exclude domain="sharedpref" path="cybertura_installation.xml"/>
 </full-backup-content>

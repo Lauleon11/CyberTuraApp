@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import me.lauraleon.cybertura.data.local.dao.WorldProgressDao
 import me.lauraleon.cybertura.data.local.entity.WorldProgressEntity
+import me.lauraleon.cybertura.data.remote.FirestorePaths
 import me.lauraleon.cybertura.domain.model.World
 import me.lauraleon.cybertura.domain.model.WorldProgress
 import me.lauraleon.cybertura.domain.model.WorldState
@@ -17,7 +18,8 @@ import javax.inject.Singleton
 @Singleton
 class WorldRepositoryImpl @Inject constructor(
     private val worldProgressDao: WorldProgressDao,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val paths: FirestorePaths
 ) : WorldRepository {
 
     override fun observeWorlds(): Flow<List<WorldState>> =
@@ -67,11 +69,10 @@ class WorldRepositoryImpl @Inject constructor(
 
         try {
             val batch = firestore.batch()
-            val playerDoc = firestore.collection("players").document("1")
 
-            batch.set(playerDoc.collection("worlds").document(worldId.toString()), completedEntity)
+            batch.set(firestore.document(paths.world(worldId)), completedEntity)
             if (unlockedEntity != null && nextWorld != null) {
-                batch.set(playerDoc.collection("worlds").document(nextWorld.id.toString()), unlockedEntity)
+                batch.set(firestore.document(paths.world(nextWorld.id)), unlockedEntity)
             }
             batch.commit().await()
         } catch (e: Exception) {
@@ -94,8 +95,7 @@ class WorldRepositoryImpl @Inject constructor(
         worldProgressDao.upsert(updatedEntity)
 
         try {
-            val playerDoc = firestore.collection("players").document("1")
-            playerDoc.collection("worlds").document(worldId.toString()).set(updatedEntity).await()
+            firestore.document(paths.world(worldId)).set(updatedEntity).await()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -113,8 +113,7 @@ class WorldRepositoryImpl @Inject constructor(
 
         try {
             val batch = firestore.batch()
-            val playerDoc = firestore.collection("players").document("1")
-            batch.set(playerDoc.collection("worlds").document("1"), world1Entity)
+            batch.set(firestore.document(paths.world(1)), world1Entity)
             for (id in 2..5) {
                 val lockedEntity = WorldProgressEntity(
                     worldId = id,
@@ -122,7 +121,7 @@ class WorldRepositoryImpl @Inject constructor(
                     completedAt = null,
                     currentScreen = "A"
                 )
-                batch.set(playerDoc.collection("worlds").document(id.toString()), lockedEntity)
+                batch.set(firestore.document(paths.world(id)), lockedEntity)
             }
             batch.commit().await()
         } catch (e: Exception) {

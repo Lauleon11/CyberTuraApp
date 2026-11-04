@@ -11,6 +11,8 @@ import dagger.hilt.components.SingletonComponent
 import me.lauraleon.cybertura.data.local.CyberturaDatabase
 import me.lauraleon.cybertura.data.local.dao.PlayerDao
 import me.lauraleon.cybertura.data.local.dao.WorldProgressDao
+import me.lauraleon.cybertura.data.remote.InstallationIdProvider
+import me.lauraleon.cybertura.data.remote.SharedPreferencesInstallationIdStore
 import javax.inject.Singleton
 
 @Module
@@ -36,4 +38,9 @@ object DataModule {
     @Provides
     @Singleton
     fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideInstallationIdProvider(@ApplicationContext context: Context): InstallationIdProvider =
+        InstallationIdProvider(SharedPreferencesInstallationIdStore(context))
 }
