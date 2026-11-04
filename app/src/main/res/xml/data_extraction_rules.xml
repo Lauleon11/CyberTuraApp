@@ -4,16 +4,11 @@
    for details.
 -->
 <data-extraction-rules>
+    <!-- Each installation needs its own id, so a restored device never shares a Firestore document. -->
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="sharedpref" path="cybertura_installation.xml"/>
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="sharedpref" path="cybertura_installation.xml"/>
     </device-transfer>
-    -->
 </data-extraction-rules>

@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 import me.lauraleon.cybertura.data.local.dao.PlayerDao
 import me.lauraleon.cybertura.data.local.entity.PlayerProfileEntity
+import me.lauraleon.cybertura.data.remote.FirestorePaths
 import me.lauraleon.cybertura.domain.model.PlayerProfile
 import me.lauraleon.cybertura.domain.repository.PlayerRepository
 import javax.inject.Inject
@@ -14,7 +15,8 @@ import javax.inject.Singleton
 @Singleton
 class PlayerRepositoryImpl @Inject constructor(
     private val playerDao: PlayerDao,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val paths: FirestorePaths
 ) : PlayerRepository {
 
     override fun observePlayer(): Flow<PlayerProfile?> =
@@ -23,8 +25,7 @@ class PlayerRepositoryImpl @Inject constructor(
     override suspend fun savePlayer(profile: PlayerProfile) {
         playerDao.upsertPlayer(profile.toEntity())
         try {
-            firestore.collection("players")
-                .document(profile.id.toString())
+            firestore.document(paths.player)
                 .set(profile)
                 .await()
         } catch (e: Exception) {
@@ -33,28 +34,23 @@ class PlayerRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveSurvey(
-        playerId: String,
         stars: Int,
         comments: String,
         surveyAnswers: Map<Int, Int>
     ) {
         try {
             val surveyData = hashMapOf(
-                "playerId" to playerId,
+                "playerId" to paths.playerId,
                 "timestamp" to System.currentTimeMillis(),
                 "averageStars" to stars,
                 "openComment" to comments,
                 "questionAnswers" to surveyAnswers.mapKeys { "question_${it.key + 1}" }
             )
-            firestore.collection("surveys")
-                .document(playerId)
+            firestore.document(paths.survey)
                 .set(surveyData)
                 .await()
 
-            firestore.collection("players")
-                .document(playerId)
-                .collection("survey")
-                .document("latest")
+            firestore.document(paths.playerSurvey)
                 .set(surveyData)
                 .await()
         } catch (e: Exception) {

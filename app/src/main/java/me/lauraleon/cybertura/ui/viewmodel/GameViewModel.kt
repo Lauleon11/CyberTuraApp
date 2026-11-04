@@ -113,9 +113,8 @@ class GameViewModel @Inject constructor(
 
     fun saveSurvey(stars: Int, comments: String, surveyAnswers: Map<Int, Int>) {
         viewModelScope.launch {
-            val playerId = playerMutex.withLock {
+            playerMutex.withLock {
                 val current = playerRepository.observePlayer().firstOrNull()
-                val id = (current?.id ?: 1).toString()
                 val updated = (current ?: PlayerProfile(
                     id = 1,
                     nickname = "Jugador",
@@ -128,9 +127,8 @@ class GameViewModel @Inject constructor(
                     hasRated = true
                 )
                 playerRepository.savePlayer(updated)
-                id
             }
-            playerRepository.saveSurvey(playerId, stars, comments, surveyAnswers)
+            playerRepository.saveSurvey(stars, comments, surveyAnswers)
         }
     }
 
