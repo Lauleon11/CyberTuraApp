@@ -11,8 +11,8 @@ import dagger.hilt.components.SingletonComponent
 import me.lauraleon.cybertura.data.local.CyberturaDatabase
 import me.lauraleon.cybertura.data.local.dao.PlayerDao
 import me.lauraleon.cybertura.data.local.dao.WorldProgressDao
-import me.lauraleon.cybertura.data.remote.InstallationIdProvider
-import me.lauraleon.cybertura.data.remote.SharedPreferencesInstallationIdStore
+import me.lauraleon.cybertura.data.remote.PlayerIdProvider
+import me.lauraleon.cybertura.data.remote.SharedPreferencesPlayerIdStore
 import javax.inject.Singleton
 
 @Module
@@ -37,10 +37,13 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance().apply {
+        // Starts the client on launch so writes queued in an earlier session get sent right away.
+        enableNetwork()
+    }
 
     @Provides
     @Singleton
-    fun provideInstallationIdProvider(@ApplicationContext context: Context): InstallationIdProvider =
-        InstallationIdProvider(SharedPreferencesInstallationIdStore(context))
+    fun providePlayerIdProvider(@ApplicationContext context: Context): PlayerIdProvider =
+        PlayerIdProvider(SharedPreferencesPlayerIdStore(context))
 }

@@ -7,4 +7,8 @@ interface PlayerRepository {
     fun observePlayer(): Flow<PlayerProfile?>
     suspend fun savePlayer(profile: PlayerProfile)
     suspend fun saveSurvey(stars: Int, comments: String, surveyAnswers: Map<Int, Int>)
+
+    /** Sends later writes to new Firestore documents, leaving the existing ones untouched. */
+    suspend fun startNewPlayerDocument()
+    suspend fun clearLocalPlayer()
 }

@@ -148,46 +148,6 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun recordAttempt(worldNumber: Int, screen: Char) {
-        viewModelScope.launch {
-            updateExistingPlayer { current ->
-                when (worldNumber) {
-                    1 -> when (screen) {
-                        'E' -> current.copy(attemptsW1E = current.attemptsW1E + 1)
-                        'F' -> current.copy(attemptsW1F = current.attemptsW1F + 1)
-                        'G' -> current.copy(attemptsW1G = current.attemptsW1G + 1)
-                        else -> current
-                    }
-                    2 -> when (screen) {
-                        'E' -> current.copy(attemptsW2E = current.attemptsW2E + 1)
-                        'F' -> current.copy(attemptsW2F = current.attemptsW2F + 1)
-                        'G' -> current.copy(attemptsW2G = current.attemptsW2G + 1)
-                        else -> current
-                    }
-                    3 -> when (screen) {
-                        'E' -> current.copy(attemptsW3E = current.attemptsW3E + 1)
-                        'F' -> current.copy(attemptsW3F = current.attemptsW3F + 1)
-                        'G' -> current.copy(attemptsW3G = current.attemptsW3G + 1)
-                        else -> current
-                    }
-                    4 -> when (screen) {
-                        'E' -> current.copy(attemptsW4E = current.attemptsW4E + 1)
-                        'F' -> current.copy(attemptsW4F = current.attemptsW4F + 1)
-                        'G' -> current.copy(attemptsW4G = current.attemptsW4G + 1)
-                        else -> current
-                    }
-                    5 -> when (screen) {
-                        'E' -> current.copy(attemptsW5E = current.attemptsW5E + 1)
-                        'F' -> current.copy(attemptsW5F = current.attemptsW5F + 1)
-                        'G' -> current.copy(attemptsW5G = current.attemptsW5G + 1)
-                        else -> current
-                    }
-                    else -> current
-                }
-            }
-        }
-    }
-
     fun recordActivityAMetrics(worldNumber: Int, timeSeconds: Int, errors: Int, attempts: Int) {
         viewModelScope.launch {
             updateExistingPlayer { current ->
@@ -285,11 +245,25 @@ class GameViewModel @Inject constructor(
         }
     }
 
+    /** Lets another student play on this phone. Earlier results stay in their own documents. */
+    fun startNewPlayer() {
+        _introNarrativeConsumed.value = false
+        viewModelScope.launch {
+            playerMutex.withLock {
+                playerRepository.startNewPlayerDocument()
+                worldRepository.clearLocalWorlds()
+                playerRepository.clearLocalPlayer()
+            }
+        }
+    }
+
+    /** Starts a new attempt in new documents, so the finished one is kept as it was. */
     fun resetGame() {
         _introNarrativeConsumed.value = false
         viewModelScope.launch {
-            worldRepository.resetWorlds()
             playerMutex.withLock {
+                playerRepository.startNewPlayerDocument()
+                worldRepository.resetWorlds()
                 val current = playerRepository.observePlayer().firstOrNull()
                 val updated = current?.copy(
                     score = 0,

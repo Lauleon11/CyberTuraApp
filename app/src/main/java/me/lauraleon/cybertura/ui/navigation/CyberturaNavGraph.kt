@@ -129,6 +129,12 @@ fun CyberturaNavGraph(
                         popUpTo<Screen1> { inclusive = true }
                     }
                 },
+                onNewPlayer = {
+                    viewModel.startNewPlayer()
+                    navController.navigate(Screen1) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                },
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -243,15 +249,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 1)
                 viewModel.updateWorldScreen(1, "E")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 1, 'E')
             val route: World1ScreenE = backStackEntry.toRoute()
             World1ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(1, 'E')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World1ScreenF(gender = route.gender, costumeId = route.costumeId))
@@ -264,15 +274,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 1)
                 viewModel.updateWorldScreen(1, "F")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 1, 'F')
             val route: World1ScreenF = backStackEntry.toRoute()
             World1ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(1, 'F')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World1ScreenG(gender = route.gender, costumeId = route.costumeId))
@@ -285,15 +299,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 1)
                 viewModel.updateWorldScreen(1, "G")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 1, 'G')
             val route: World1ScreenG = backStackEntry.toRoute()
             World1ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(1, 'G')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World1ScreenH)
@@ -411,15 +429,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 2)
                 viewModel.updateWorldScreen(2, "E")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 2, 'E')
             val route: World2ScreenE = backStackEntry.toRoute()
             World2ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(2, 'E')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World2ScreenF(gender = route.gender, costumeId = route.costumeId))
@@ -432,15 +454,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 2)
                 viewModel.updateWorldScreen(2, "F")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 2, 'F')
             val route: World2ScreenF = backStackEntry.toRoute()
             World2ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(2, 'F')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World2ScreenG(gender = route.gender, costumeId = route.costumeId))
@@ -453,15 +479,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 2)
                 viewModel.updateWorldScreen(2, "G")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 2, 'G')
             val route: World2ScreenG = backStackEntry.toRoute()
             World2ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(2, 'G')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World2ScreenH)
@@ -579,15 +609,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 3)
                 viewModel.updateWorldScreen(3, "E")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 3, 'E')
             val route: World3ScreenE = backStackEntry.toRoute()
             World3ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(3, 'E')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World3ScreenF(gender = route.gender, costumeId = route.costumeId))
@@ -600,15 +634,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 3)
                 viewModel.updateWorldScreen(3, "F")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 3, 'F')
             val route: World3ScreenF = backStackEntry.toRoute()
             World3ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(3, 'F')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World3ScreenG(gender = route.gender, costumeId = route.costumeId))
@@ -621,15 +659,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 3)
                 viewModel.updateWorldScreen(3, "G")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 3, 'G')
             val route: World3ScreenG = backStackEntry.toRoute()
             World3ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(3, 'G')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World3ScreenH)
@@ -747,15 +789,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 4)
                 viewModel.updateWorldScreen(4, "E")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 4, 'E')
             val route: World4ScreenE = backStackEntry.toRoute()
             World4ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(4, 'E')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World4ScreenF(gender = route.gender, costumeId = route.costumeId))
@@ -768,15 +814,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 4)
                 viewModel.updateWorldScreen(4, "F")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 4, 'F')
             val route: World4ScreenF = backStackEntry.toRoute()
             World4ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(4, 'F')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World4ScreenG(gender = route.gender, costumeId = route.costumeId))
@@ -789,15 +839,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 4)
                 viewModel.updateWorldScreen(4, "G")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 4, 'G')
             val route: World4ScreenG = backStackEntry.toRoute()
             World4ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(4, 'G')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World4ScreenH)
@@ -915,15 +969,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 5)
                 viewModel.updateWorldScreen(5, "E")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 5, 'E')
             val route: World5ScreenE = backStackEntry.toRoute()
             World5ScreenE(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(5, 'E')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World5ScreenF(gender = route.gender, costumeId = route.costumeId))
@@ -936,15 +994,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 5)
                 viewModel.updateWorldScreen(5, "F")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 5, 'F')
             val route: World5ScreenF = backStackEntry.toRoute()
             World5ScreenF(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(5, 'F')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World5ScreenG(gender = route.gender, costumeId = route.costumeId))
@@ -957,15 +1019,19 @@ fun CyberturaNavGraph(
                 viewModel.startWorldMusic(context, 5)
                 viewModel.updateWorldScreen(5, "G")
             }
+            val metrics = rememberQuestionMetrics(viewModel, 5, 'G')
             val route: World5ScreenG = backStackEntry.toRoute()
             World5ScreenG(
                 gender = route.gender,
                 costumeId = route.costumeId,
                 score = playerProfile?.score ?: 0,
-                onCorrectAnswer = { viewModel.addScore(10) },
+                onCorrectAnswer = {
+                    viewModel.addScore(10)
+                    metrics.onCorrect()
+                },
                 onIncorrectAttempt = {
                     viewModel.addScore(-5)
-                    viewModel.recordAttempt(5, 'G')
+                    metrics.onIncorrect()
                 },
                 onSuccess = {
                     navController.navigate(World5ScreenH)
@@ -990,6 +1056,28 @@ fun CyberturaNavGraph(
                 }
             )
         }
+    }
+}
+
+/** Measures one question screen, counting attempts the same way as activities A and B. */
+private class QuestionMetrics(private val record: (seconds: Int, errors: Int, attempts: Int) -> Unit) {
+    private val startTime = System.currentTimeMillis()
+    private var errors = 0
+
+    fun onIncorrect() {
+        errors++
+    }
+
+    fun onCorrect() {
+        val seconds = ((System.currentTimeMillis() - startTime) / 1000).toInt()
+        record(seconds, errors, errors + 1)
+    }
+}
+
+@Composable
+private fun rememberQuestionMetrics(viewModel: GameViewModel, worldId: Int, screen: Char) = remember {
+    QuestionMetrics { seconds, errors, attempts ->
+        viewModel.recordQuestionMetrics(worldId, screen, seconds, errors, attempts)
     }
 }
 

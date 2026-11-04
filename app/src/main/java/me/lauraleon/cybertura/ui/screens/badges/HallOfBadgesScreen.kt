@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.badges
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,6 +13,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,8 +44,10 @@ fun HallOfBadgesScreen(
     unlockedWorldMax: Int = 5,
     completedWorldIds: Set<Int> = emptySet(),
     onPlayAgain: () -> Unit = {},
+    onNewPlayer: () -> Unit = {},
     onBackClick: () -> Unit = {}
 ) {
+    var showNewPlayerDialog by remember { mutableStateOf(false) }
     val badges = listOf(
         Badge(1, "Mundo 1: Phishing", R.drawable.world1_insignia, unlockedWorldMax >= 2),
         Badge(2, "Mundo 2: Contraseñas", R.drawable.world2_insignia, unlockedWorldMax >= 3),
@@ -134,7 +141,49 @@ fun HallOfBadgesScreen(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
+            OutlinedButton(
+                onClick = { showNewPlayerDialog = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                border = BorderStroke(2.dp, CyberViolet),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = "NUEVO JUGADOR",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
+        }
+
+        if (showNewPlayerDialog) {
+            AlertDialog(
+                onDismissRequest = { showNewPlayerDialog = false },
+                title = { Text("¿Empezar con otro jugador?") },
+                text = {
+                    Text("Tu partida ya quedó guardada. El siguiente jugador empieza desde el inicio y no borra tus datos.")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showNewPlayerDialog = false
+                            onNewPlayer()
+                        }
+                    ) {
+                        Text("SÍ, NUEVO JUGADOR")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showNewPlayerDialog = false }) {
+                        Text("CANCELAR")
+                    }
+                }
+            )
         }
     }
 }

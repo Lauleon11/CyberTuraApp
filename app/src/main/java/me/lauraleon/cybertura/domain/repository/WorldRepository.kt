@@ -8,4 +8,5 @@ interface WorldRepository {
     suspend fun completeWorld(worldId: Int)
     suspend fun updateWorldScreen(worldId: Int, screen: String)
     suspend fun resetWorlds()
+    suspend fun clearLocalWorlds()
 }

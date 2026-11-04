@@ -3,10 +3,10 @@ package me.lauraleon.cybertura.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
 import me.lauraleon.cybertura.data.local.dao.WorldProgressDao
 import me.lauraleon.cybertura.data.local.entity.WorldProgressEntity
 import me.lauraleon.cybertura.data.remote.FirestorePaths
+import me.lauraleon.cybertura.data.remote.queueRemoteWrite
 import me.lauraleon.cybertura.domain.model.World
 import me.lauraleon.cybertura.domain.model.WorldProgress
 import me.lauraleon.cybertura.domain.model.WorldState
@@ -67,16 +67,14 @@ class WorldRepositoryImpl @Inject constructor(
             worldProgressDao.upsert(unlockedEntity)
         }
 
-        try {
+        queueRemoteWrite("completed world $worldId") {
             val batch = firestore.batch()
 
             batch.set(firestore.document(paths.world(worldId)), completedEntity)
             if (unlockedEntity != null && nextWorld != null) {
                 batch.set(firestore.document(paths.world(nextWorld.id)), unlockedEntity)
             }
-            batch.commit().await()
-        } catch (e: Exception) {
-            e.printStackTrace()
+            batch.commit()
         }
     }
 
@@ -94,10 +92,8 @@ class WorldRepositoryImpl @Inject constructor(
         }
         worldProgressDao.upsert(updatedEntity)
 
-        try {
-            firestore.document(paths.world(worldId)).set(updatedEntity).await()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        queueRemoteWrite("world $worldId progress") {
+            firestore.document(paths.world(worldId)).set(updatedEntity)
         }
     }
 
@@ -111,7 +107,7 @@ class WorldRepositoryImpl @Inject constructor(
         )
         worldProgressDao.upsert(world1Entity)
 
-        try {
+        queueRemoteWrite("reset worlds") {
             val batch = firestore.batch()
             batch.set(firestore.document(paths.world(1)), world1Entity)
             for (id in 2..5) {
@@ -123,10 +119,12 @@ class WorldRepositoryImpl @Inject constructor(
                 )
                 batch.set(firestore.document(paths.world(id)), lockedEntity)
             }
-            batch.commit().await()
-        } catch (e: Exception) {
-            e.printStackTrace()
+            batch.commit()
         }
+    }
+
+    override suspend fun clearLocalWorlds() {
+        worldProgressDao.deleteAll()
     }
 }
 

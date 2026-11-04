@@ -3,10 +3,10 @@ package me.lauraleon.cybertura.data.repository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.tasks.await
 import me.lauraleon.cybertura.data.local.dao.PlayerDao
 import me.lauraleon.cybertura.data.local.entity.PlayerProfileEntity
 import me.lauraleon.cybertura.data.remote.FirestorePaths
+import me.lauraleon.cybertura.data.remote.queueRemoteWrite
 import me.lauraleon.cybertura.domain.model.PlayerProfile
 import me.lauraleon.cybertura.domain.repository.PlayerRepository
 import javax.inject.Inject
@@ -24,12 +24,8 @@ class PlayerRepositoryImpl @Inject constructor(
 
     override suspend fun savePlayer(profile: PlayerProfile) {
         playerDao.upsertPlayer(profile.toEntity())
-        try {
-            firestore.document(paths.player)
-                .set(profile)
-                .await()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        queueRemoteWrite("player") {
+            firestore.document(paths.player).set(profile)
         }
     }
 
@@ -38,24 +34,27 @@ class PlayerRepositoryImpl @Inject constructor(
         comments: String,
         surveyAnswers: Map<Int, Int>
     ) {
-        try {
-            val surveyData = hashMapOf(
-                "playerId" to paths.playerId,
-                "timestamp" to System.currentTimeMillis(),
-                "averageStars" to stars,
-                "openComment" to comments,
-                "questionAnswers" to surveyAnswers.mapKeys { "question_${it.key + 1}" }
-            )
-            firestore.document(paths.survey)
-                .set(surveyData)
-                .await()
-
-            firestore.document(paths.playerSurvey)
-                .set(surveyData)
-                .await()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        val surveyData = hashMapOf(
+            "playerId" to paths.playerId,
+            "timestamp" to System.currentTimeMillis(),
+            "averageStars" to stars,
+            "openComment" to comments,
+            "questionAnswers" to surveyAnswers.mapKeys { "question_${it.key + 1}" }
+        )
+        queueRemoteWrite("survey") {
+            firestore.batch()
+                .set(firestore.document(paths.survey), surveyData)
+                .set(firestore.document(paths.playerSurvey), surveyData)
+                .commit()
         }
+    }
+
+    override suspend fun startNewPlayerDocument() {
+        paths.startNewPlayer()
+    }
+
+    override suspend fun clearLocalPlayer() {
+        playerDao.deleteAll()
     }
 }
 
