@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world4
 
+import me.lauraleon.cybertura.ui.theme.ScrollableFillColumn
 import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -122,12 +123,7 @@ fun World4ScreenF(
             contentScale = ContentScale.Crop
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ScrollableFillColumn(modifier = Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(40.dp))
 
             if (!isCustomBgPresent) {
@@ -201,7 +197,7 @@ fun World4ScreenF(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton4(
@@ -222,7 +218,7 @@ fun World4ScreenF(
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton4(

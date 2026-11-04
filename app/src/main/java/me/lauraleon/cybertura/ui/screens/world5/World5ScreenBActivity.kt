@@ -264,7 +264,7 @@ fun World5ScreenBActivity(
                     val isRevealed = letter in guessedLetters
                     Box(
                         modifier = Modifier
-                            .size(width = 30.dp, height = 42.dp)
+                            .weight(1f, fill = false).width(30.dp).height(42.dp)
                             .background(
                                 if (isRevealed) CyberSuccess.copy(alpha = 0.2f) else Color(0xFF1E1035),
                                 RoundedCornerShape(6.dp)
@@ -316,7 +316,7 @@ fun World5ScreenBActivity(
 
                             Box(
                                 modifier = Modifier
-                                    .size(width = 40.dp, height = 45.dp)
+                                    .weight(1f, fill = false).width(40.dp).height(45.dp)
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(buttonBg)
                                     .border(

@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world4
 
+import me.lauraleon.cybertura.ui.theme.ScrollableFillColumn
 import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -114,12 +115,7 @@ fun World4ScreenE(
             contentScale = ContentScale.Crop
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ScrollableFillColumn(modifier = Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(40.dp))
 
             if (!isCustomBgPresent) {
@@ -193,7 +189,7 @@ fun World4ScreenE(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton4(
@@ -208,7 +204,7 @@ fun World4ScreenE(
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton4(
@@ -348,7 +344,7 @@ fun OptionButton4(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(85.dp),
+        modifier = modifier.fillMaxHeight().heightIn(min = 85.dp),
         shape = RoundedCornerShape(12.dp),
         color = Color.Black.copy(alpha = 0.65f),
         border = BorderStroke(1.5.dp, CyberViolet)

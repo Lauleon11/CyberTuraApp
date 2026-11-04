@@ -215,7 +215,7 @@ fun World3ScreenCActivity(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray.copy(alpha = 0.7f)),
                 border = BorderStroke(1.dp, CyberCyan),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.height(40.dp)
+                modifier = Modifier.heightIn(min = 40.dp)
             ) {
                 Text(
                     text = "🔄 REINICIAR ROMPECABEZAS",

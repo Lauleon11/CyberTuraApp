@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world1
 
+import me.lauraleon.cybertura.ui.theme.ScrollableFillColumn
 import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -118,12 +119,7 @@ fun World1ScreenE(
             contentScale = ContentScale.Crop
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ScrollableFillColumn(modifier = Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(40.dp))
 
             // Show standalone character image only if standard background is used
@@ -201,7 +197,7 @@ fun World1ScreenE(
             ) {
                 // Row 1: Option A and Option B side-by-side
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton(
@@ -218,7 +214,7 @@ fun World1ScreenE(
 
                 // Row 2: Option C (Correct) and Option D side-by-side
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton(

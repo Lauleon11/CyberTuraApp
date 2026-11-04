@@ -21,7 +21,7 @@ fun World4ScreenB(onNextClick: () -> Unit) {
             .background(Color.Black),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "MIS DATOS = INFORMACIÓN QUE DEBO PROTEGER",
             color = CyberCyan,

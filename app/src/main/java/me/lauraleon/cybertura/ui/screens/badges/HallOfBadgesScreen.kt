@@ -63,8 +63,6 @@ fun HallOfBadgesScreen(
                 .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -163,6 +161,7 @@ fun BadgeCard(badge: Badge) {
         ) {
             Box(
                 modifier = Modifier
+                    .weight(1f, fill = false)
                     .size(80.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .border(

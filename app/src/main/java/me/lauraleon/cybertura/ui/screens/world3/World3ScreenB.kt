@@ -21,7 +21,7 @@ fun World3ScreenB(onNextClick: () -> Unit) {
             .background(Color.Black),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "CIBERACOSO = USAR MEDIOS DIGITALES PARA HACER DAÑO A OTRA PERSONA",
             color = CyberCyan,

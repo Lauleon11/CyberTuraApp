@@ -21,7 +21,7 @@ fun World2ScreenB(onNextClick: () -> Unit) {
             .background(Color.Black),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "¿POR QUÉ DEBEMOS PROTEGER NUESTRAS CUENTAS?",
             color = CyberCyan,

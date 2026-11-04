@@ -124,7 +124,7 @@ fun Screen2Content(
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(70.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Section 1: Alias
             CyberSection(title = "1. ELIGE TU ALIAS") {

@@ -235,9 +235,9 @@ fun World2ScreenBActivity(
                         text = if (isWordSolved) "🔒 Cerradura Reforzada" else if (incorrectCount > 0) "🔨 Rompeclaves atacando..." else "🛡️ Fortaleza Protegida",
                         color = if (isWordSolved) CyberSuccess else if (incorrectCount > 0) CyberDanger else CyberCyan,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.weight(1f))
                     Row {
                         repeat(maxAttempts) { index ->
                             val isHeartActive = index < remainingAttempts
@@ -266,7 +266,7 @@ fun World2ScreenBActivity(
 
                     Box(
                         modifier = Modifier
-                            .size(width = 32.dp, height = 44.dp)
+                            .weight(1f, fill = false).width(32.dp).height(44.dp)
                             .background(
                                 if (isRevealed) CyberSuccess.copy(alpha = 0.2f) else Color(0xFF1E1035),
                                 RoundedCornerShape(8.dp)
@@ -318,7 +318,7 @@ fun World2ScreenBActivity(
 
                             Box(
                                 modifier = Modifier
-                                    .size(width = 42.dp, height = 46.dp)
+                                    .weight(1f, fill = false).width(42.dp).height(46.dp)
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(buttonBg)
                                     .border(

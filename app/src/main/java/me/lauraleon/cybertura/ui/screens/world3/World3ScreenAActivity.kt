@@ -326,7 +326,7 @@ fun World3ScreenAActivity(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Target Words Chips
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -344,6 +344,8 @@ fun World3ScreenAActivity(
                         Text(
                             text = pos.displayWord,
                             color = if (isFound) CyberSuccess else Color.LightGray,
+                            maxLines = 1,
+                            softWrap = false,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             textDecoration = if (isFound) TextDecoration.LineThrough else TextDecoration.None,

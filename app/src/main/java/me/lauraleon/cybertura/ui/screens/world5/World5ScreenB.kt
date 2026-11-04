@@ -21,7 +21,7 @@ fun World5ScreenB(onNextClick: () -> Unit) {
             .background(Color.Black),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "MI IDENTIDAD DIGITAL = LO QUE REPRESENTO EN INTERNET",
             color = CyberCyan,

@@ -1,5 +1,6 @@
 package me.lauraleon.cybertura.ui.screens.world2
 
+import me.lauraleon.cybertura.ui.theme.ScrollableFillColumn
 import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -117,12 +118,7 @@ fun World2ScreenE(
             contentScale = ContentScale.Crop
         )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ScrollableFillColumn(modifier = Modifier.fillMaxSize().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.height(40.dp))
 
             // Show standalone character image only if standard background is used
@@ -200,7 +196,7 @@ fun World2ScreenE(
             ) {
                 // Row 1: Option A and Option B side-by-side
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton2(
@@ -217,7 +213,7 @@ fun World2ScreenE(
 
                 // Row 2: Option C and Option D (Correct) side-by-side
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OptionButton2(
@@ -358,7 +354,7 @@ fun OptionButton2(
 ) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(75.dp),
+        modifier = modifier.fillMaxHeight().heightIn(min = 75.dp),
         shape = RoundedCornerShape(12.dp),
         color = Color.Black.copy(alpha = 0.65f),
         border = BorderStroke(1.5.dp, CyberViolet)
