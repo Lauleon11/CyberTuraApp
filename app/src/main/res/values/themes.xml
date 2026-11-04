@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.CyberTura" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.CyberTura" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/cyber_space</item>
+    </style>
+
+    <!-- Shown while the app launches; MainActivity swaps to Theme.CyberTura in onCreate. -->
+    <style name="Theme.CyberTura.Splash">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 </resources>

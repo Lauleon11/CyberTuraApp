@@ -14,6 +14,8 @@ import me.lauraleon.cybertura.ui.theme.CyberTuraTheme
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        // The manifest theme only covers the launch window; drop it so the splash icon can't show behind the UI.
+        setTheme(R.style.Theme_CyberTura)
         super.onCreate(savedInstanceState)
         // The app is always dark, so the system bar icons must stay light in any system theme.
         enableEdgeToEdge(

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 12+ always draws a system splash screen; style it instead of the launch window. -->
+    <style name="Theme.CyberTura.Splash">
+        <item name="android:windowSplashScreenBackground">@color/cyber_space</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+</resources>
